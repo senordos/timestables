@@ -11,8 +11,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
         <azure.functions.maven.plugin.version>1.24.0</azure.functions.maven.plugin.version>
         <azure.functions.java.library.version>3.0.0</azure.functions.java.library.version>
         <functionAppName>timestables-api</functionAppName>
@@ -75,7 +75,7 @@
                     <runtime>
                         <!-- runtime os, can be windows, linux or docker-->
                         <os>linux</os>
-                        <javaVersion>17</javaVersion>
+                        <javaVersion>11</javaVersion>
                     </runtime>
                     <appSettings>
                         <property>
