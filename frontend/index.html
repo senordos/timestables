@@ -9,16 +9,39 @@
 <body>
     <div class="container">
         <h1>Maths Fun! 🧮</h1>
-        <div id="quiz-screen">
-            <div class="score-board">
+
+        <!-- Configuration Screen -->
+        <div id="config-screen">
+            <p>Pick your timestables:</p>
+            <div id="table-selection" class="button-grid">
+                <!-- Buttons 2-12 will be injected here or hardcoded -->
+                <button class="table-btn" data-value="2">2</button>
+                <button class="table-btn" data-value="3">3</button>
+                <button class="table-btn" data-value="4">4</button>
+                <button class="table-btn" data-value="5">5</button>
+                <button class="table-btn" data-value="6">6</button>
+                <button class="table-btn" data-value="7">7</button>
+                <button class="table-btn" data-value="8">8</button>
+                <button class="table-btn" data-value="9">9</button>
+                <button class="table-btn" data-value="10">10</button>
+                <button class="table-btn" data-value="11">11</button>
+                <button class="table-btn" data-value="12">12</button>
+            </div>
+            <button id="start-btn" class="main-btn" disabled>Start Quiz!</button>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div id="quiz-screen" style="display:none;">
+            <div class="quiz-info">
+                <span>Question: <span id="question-num">1</span> / 10</span>
                 <span>Score: <span id="score">0</span></span>
             </div>
             <div class="question-container">
                 <span id="question">Loading...</span>
             </div>
             <div class="input-area">
-                <input type="number" id="answer" placeholder="?" autocomplete="off" autofocus>
-                <button id="submit-btn">Go!</button>
+                <input type="number" id="answer" placeholder="?" autocomplete="off" readonly>
+                <button id="submit-btn" class="go-btn">Go!</button>
             </div>
             <div class="keypad">
                 <div class="keypad-row">
@@ -43,6 +66,18 @@
                 </div>
             </div>
             <div id="feedback" class="feedback-area"></div>
+        </div>
+
+        <!-- Results Screen -->
+        <div id="results-screen" style="display:none;">
+            <h2>Quiz Finished! 🏁</h2>
+            <div class="final-score">
+                You scored <span id="final-score">0</span> out of 10!
+            </div>
+            <div class="result-actions">
+                <button id="another-go-btn" class="main-btn">Another Go?</button>
+                <button id="reset-btn" class="secondary-btn">Reset</button>
+            </div>
         </div>
     </div>
     <script src="app.js"></script>
