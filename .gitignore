@@ -1,0 +1,21 @@
+# Java
+target/
+api/target/
+*.class
+*.jar
+*.war
+*.ear
+
+# Azure Functions
+obj/
+bin/
+api/obj/
+api/bin/
+local.settings.json
+
+# IDEs and OS
+.idea/
+.vscode/
+*.swp
+*.DS_Store
+.history/

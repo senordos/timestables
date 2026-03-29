@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Maths Fun! - Timestables</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Maths Fun! 🧮</h1>
+        <div id="quiz-screen">
+            <div class="score-board">
+                <span>Score: <span id="score">0</span></span>
+            </div>
+            <div class="question-container">
+                <span id="question">Loading...</span>
+            </div>
+            <div class="input-area">
+                <input type="number" id="answer" placeholder="?" autocomplete="off" autofocus>
+                <button id="submit-btn">Go!</button>
+            </div>
+            <div class="keypad">
+                <div class="keypad-row">
+                    <button class="key-btn">1</button>
+                    <button class="key-btn">2</button>
+                    <button class="key-btn">3</button>
+                </div>
+                <div class="keypad-row">
+                    <button class="key-btn">4</button>
+                    <button class="key-btn">5</button>
+                    <button class="key-btn">6</button>
+                </div>
+                <div class="keypad-row">
+                    <button class="key-btn">7</button>
+                    <button class="key-btn">8</button>
+                    <button class="key-btn">9</button>
+                </div>
+                <div class="keypad-row">
+                    <button class="key-btn" id="clear-btn">C</button>
+                    <button class="key-btn">0</button>
+                    <button class="key-btn" id="del-btn">⌫</button>
+                </div>
+            </div>
+            <div id="feedback" class="feedback-area"></div>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>

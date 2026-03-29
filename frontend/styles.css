@@ -1,0 +1,126 @@
+body {
+    font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', cursive, sans-serif;
+    background-color: #f0f8ff;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+.container {
+    background-color: #ffffff;
+    padding: 30px;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    text-align: center;
+    width: 350px;
+    border: 5px solid #ffeb3b;
+}
+
+h1 {
+    color: #ff5722;
+    font-size: 2.5em;
+    margin-bottom: 20px;
+}
+
+.score-board {
+    font-size: 1.2em;
+    color: #4caf50;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+.question-container {
+    font-size: 3em;
+    margin: 30px 0;
+    color: #2196f3;
+}
+
+.input-area {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+input[type="number"] {
+    width: 80px;
+    font-size: 2em;
+    padding: 10px;
+    border-radius: 10px;
+    border: 3px solid #2196f3;
+    text-align: center;
+    outline: none;
+}
+
+button {
+    font-size: 1.5em;
+    padding: 10px 20px;
+    border-radius: 10px;
+    border: none;
+    background-color: #ff5722;
+    color: white;
+    cursor: pointer;
+    transition: transform 0.1s;
+}
+
+button:active {
+    transform: scale(0.95);
+}
+
+.keypad {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.keypad-row {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+.key-btn {
+    width: 60px;
+    height: 60px;
+    font-size: 1.5em;
+    border-radius: 10px;
+    border: 2px solid #2196f3;
+    background-color: #e3f2fd;
+    color: #2196f3;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.key-btn:active {
+    background-color: #2196f3;
+    color: white;
+}
+
+#clear-btn {
+    background-color: #ffebee;
+    border-color: #f44336;
+    color: #f44336;
+}
+
+#del-btn {
+    background-color: #fff3e0;
+    border-color: #ff9800;
+    color: #ff9800;
+}
+
+.feedback-area {
+    height: 30px;
+    font-size: 1.5em;
+    font-weight: bold;
+}
+
+.correct {
+    color: #4caf50;
+}
+
+.wrong {
+    color: #f44336;
+}
