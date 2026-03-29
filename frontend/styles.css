@@ -6,6 +6,7 @@ body {
     align-items: center;
     height: 100vh;
     margin: 0;
+    touch-action: manipulation;
 }
 
 .container {
@@ -151,6 +152,7 @@ input[type="number"] {
     color: #2196f3;
     cursor: pointer;
     font-weight: bold;
+    touch-action: manipulation;
 }
 
 .key-btn:active, .table-btn:active, .main-btn:active {
