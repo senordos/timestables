@@ -152,10 +152,14 @@ tableBtns.forEach(btn => {
 function createQuestionPool() {
     let pool = [];
     selectedTables.forEach(t => {
+        // t is the "Tested Table" (the second number per requirement)
+        // Multipliers 2-12 (No 1x)
         for (let i = 2; i <= 12; i++) {
-            pool.push({ a: t, b: i, answer: t * i });
+            // Formula: i x t = ? (e.g., 4 x 2)
+            pool.push({ a: i, b: t, answer: i * t });
         }
     });
+    // Shuffle the pool
     return pool.sort(() => Math.random() - 0.5);
 }
 
