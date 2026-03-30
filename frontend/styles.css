@@ -16,9 +16,13 @@ body {
     box-shadow: 0 10px 25px rgba(0,0,0,0.1);
     text-align: center;
     width: 350px;
+    min-height: 500px;
     border: 5px solid #ffeb3b;
     position: relative;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .user-display {
@@ -44,6 +48,7 @@ body {
     border-radius: 50%;
     border: 2px solid #ffcdd2;
     color: #f44336;
+    z-index: 10;
 }
 
 h1 {
@@ -61,6 +66,25 @@ p {
     font-size: 1.2em;
     color: #555;
     margin-bottom: 15px;
+}
+
+/* Warning Screen */
+#reset-confirm-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.95);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+}
+
+.warning-box {
+    padding: 20px;
+    width: 80%;
 }
 
 /* Button Grids */
@@ -272,7 +296,7 @@ input[type="number"] {
 /* Final Result UI */
 .final-score {
     font-size: 1.8em;
-    margin: 20px 0;
+    margin: 30px 0;
     color: #ff5722;
     font-weight: bold;
 }

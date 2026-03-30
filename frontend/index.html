@@ -29,7 +29,7 @@
         <div id="passcode-screen" style="display:none;">
             <h2 id="passcode-title">Create Passcode</h2>
             <div class="passcode-display">
-                <input type="password" id="passcode-input" placeholder="****" readonly maxlength="6">
+                <input type="password" id="passcode-input" placeholder="****" readonly maxlength="4">
             </div>
             <div class="keypad">
                 <div class="keypad-row">
@@ -132,6 +132,16 @@
             <div class="result-actions">
                 <button id="another-go-btn" class="main-btn">Another Go?</button>
                 <button id="reset-btn" class="secondary-btn">Reset</button>
+            </div>
+        </div>
+
+        <!-- Reset Confirmation Overlay -->
+        <div id="reset-confirm-screen" style="display:none;">
+            <div class="warning-box">
+                <h2>Are you sure? 🤔</h2>
+                <p>Your progress will be lost.</p>
+                <button id="confirm-reset-yes" class="main-btn">Yes, Reset</button>
+                <button id="confirm-reset-no" class="secondary-btn">No, Cancel</button>
             </div>
         </div>
     </div>

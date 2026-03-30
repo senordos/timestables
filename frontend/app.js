@@ -7,7 +7,8 @@ let currentQuestion = null;
 let loggedInUser = null;
 let isGuest = false;
 let authMode = null; 
-let sessionDetails = []; // Array of {table, correct}
+let sessionDetails = []; 
+let currentVisibleScreen = null; // Tracks current screen for reset cancel
 
 // DOM Elements
 const configScreen = document.getElementById('config-screen');
@@ -15,6 +16,7 @@ const quizScreen = document.getElementById('quiz-screen');
 const resultsScreen = document.getElementById('results-screen');
 const authScreen = document.getElementById('auth-screen');
 const passcodeScreen = document.getElementById('passcode-screen');
+const resetConfirmScreen = document.getElementById('reset-confirm-screen');
 
 const userDisplay = document.getElementById('user-display');
 const globalResetBtn = document.getElementById('global-reset-btn');
@@ -51,18 +53,29 @@ const backAuthBtn = document.getElementById('back-auth-btn');
 const authFeedbackEl = document.getElementById('auth-feedback');
 const authNameFeedbackEl = document.getElementById('auth-name-feedback');
 
+const confirmResetYes = document.getElementById('confirm-reset-yes');
+const confirmResetNo = document.getElementById('confirm-reset-no');
+
 // --- Screen Navigation ---
 function showScreen(screen) {
-    [configScreen, quizScreen, resultsScreen, authScreen, passcodeScreen].forEach(s => s.style.display = 'none');
-    screen.style.display = 'block';
+    [configScreen, quizScreen, resultsScreen, authScreen, passcodeScreen, resetConfirmScreen].forEach(s => s.style.display = 'none');
+    screen.style.display = (screen === resetConfirmScreen) ? 'flex' : 'block';
     
+    // Tracks screen for cancel reset, only if it's not the reset screen itself
+    if (screen !== resetConfirmScreen) {
+        currentVisibleScreen = screen;
+    }
+
     // Toggle global reset icon visibility
-    if (screen === authScreen || screen === passcodeScreen) {
+    if (screen === authScreen || screen === passcodeScreen || screen === resetConfirmScreen) {
         globalResetBtn.style.display = 'none';
     } else {
         globalResetBtn.style.display = 'flex';
     }
 }
+
+// Set initial screen
+showScreen(authScreen);
 
 // --- Auth Logic ---
 loginModeBtn.addEventListener('click', () => startAuth('login'));
@@ -92,10 +105,17 @@ function startAuth(mode) {
 
 backAuthBtn.addEventListener('click', () => showScreen(authScreen));
 
+// --- Reset Logic ---
 globalResetBtn.addEventListener('click', () => {
-    if (confirm("Are you sure? Your progress will be lost.")) {
-        resetToStart();
-    }
+    showScreen(resetConfirmScreen);
+});
+
+confirmResetNo.addEventListener('click', () => {
+    showScreen(currentVisibleScreen);
+});
+
+confirmResetYes.addEventListener('click', () => {
+    resetToStart();
 });
 
 function resetToStart() {
@@ -116,7 +136,7 @@ passKeypadBtns.forEach(btn => {
             passcodeInput.value = '';
         } else if (val === '⌫') {
             passcodeInput.value = passcodeInput.value.slice(0, -1);
-        } else if (passcodeInput.value.length < 6) {
+        } else if (passcodeInput.value.length < 4) { // Capped at 4 digits
             passcodeInput.value += val;
         }
     });
@@ -127,7 +147,7 @@ async function submitAuth() {
     const passcode = passcodeInput.value;
 
     if (passcode.length < 4) {
-        showAuthFeedback("Passcode must be at least 4 numbers!", "wrong");
+        showAuthFeedback("Passcode must be 4 numbers! 🔒", "wrong");
         return;
     }
 
