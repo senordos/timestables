@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Raw Profiles Data</title>
+    <style>
+        body { font-family: monospace; background-color: #f0f0f0; padding: 20px; }
+        .container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        pre { background: #eee; padding: 15px; border-radius: 5px; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word; }
+        h1 { margin-top: 0; }
+        .btn { padding: 10px 20px; background: #2196f3; color: white; border: none; border-radius: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Raw Profiles View 🔍</h1>
+        <button class="btn" onclick="fetchProfiles()">Refresh Data</button>
+        <p>This page shows the <code>profiles.json</code> file stored in Azure Blob Storage.</p>
+        <pre id="raw-data">Loading...</pre>
+    </div>
+
+    <script>
+        async function fetchProfiles() {
+            const display = document.getElementById('raw-data');
+            display.textContent = "Fetching latest data...";
+            try {
+                const response = await fetch('/api/GetRawProfiles');
+                const data = await response.json();
+                display.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                display.textContent = "Error fetching data: " + error.message;
+            }
+        }
+        fetchProfiles();
+    </script>
+</body>
+</html>
