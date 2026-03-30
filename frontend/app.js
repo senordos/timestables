@@ -48,6 +48,7 @@ const passcodeInput = document.getElementById('passcode-input');
 const submitAuthBtn = document.getElementById('submit-auth-btn');
 const backAuthBtn = document.getElementById('back-auth-btn');
 const authFeedbackEl = document.getElementById('auth-feedback');
+const authNameFeedbackEl = document.getElementById('auth-name-feedback');
 
 // --- Screen Navigation ---
 function showScreen(screen) {
@@ -58,6 +59,7 @@ function showScreen(screen) {
 // --- Auth Logic ---
 loginIcon.addEventListener('click', () => {
     usernameInput.value = '';
+    authNameFeedbackEl.textContent = '';
     showScreen(authScreen);
 });
 
@@ -69,9 +71,11 @@ registerModeBtn.addEventListener('click', () => startAuth('register'));
 function startAuth(mode) {
     const name = usernameInput.value.trim();
     if (!name) {
-        alert("Please enter a fun name!");
+        authNameFeedbackEl.textContent = "Please enter a fun name! 🤖";
+        authNameFeedbackEl.className = "feedback-area wrong";
         return;
     }
+    authNameFeedbackEl.textContent = "";
     authMode = mode;
     passcodeTitle.textContent = mode === 'register' ? 'Create Passcode' : 'Enter Passcode';
     passcodeInput.value = '';
@@ -119,9 +123,11 @@ async function submitAuth() {
             userDisplay.textContent = `Playing as: ${loggedInUser}`;
             showScreen(configScreen);
         } else {
+            console.error("Auth Error Data:", data);
             showAuthFeedback(data.message || response.statusText, "wrong");
         }
     } catch (error) {
+        console.error("Fetch Error:", error);
         showAuthFeedback("Connection error! 🌐", "wrong");
     }
 }
