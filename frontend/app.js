@@ -115,9 +115,11 @@ async function submitAuth() {
             userDisplay.textContent = `Playing as: ${loggedInUser}`;
             showScreen(configScreen);
         } else {
+            console.error("Auth Error Data:", data);
             showAuthFeedback(data.message || response.statusText, "wrong");
         }
     } catch (error) {
+        console.error("Fetch Error:", error);
         showAuthFeedback("Connection error! 🌐", "wrong");
     }
 }

@@ -93,4 +93,5 @@ def AuthUser(req: func.HttpRequest) -> func.HttpResponse:
 
     except Exception as e:
         logging.error(f"Error in AuthUser: {str(e)}")
-        return func.HttpResponse(f"An error occurred: {str(e)}", status_code=500)
+        # For debugging, return the error message. In production, you might want to be more careful.
+        return func.HttpResponse(json.dumps({"message": f"Server Error: {str(e)}"}), status_code=500, mimetype="application/json")
