@@ -4,11 +4,18 @@ let questionPool = [];
 let currentQuestionIndex = 0;
 let score = 0;
 let currentQuestion = null;
+let loggedInUser = null;
+let authMode = null; // 'login' or 'register'
 
 // DOM Elements
 const configScreen = document.getElementById('config-screen');
 const quizScreen = document.getElementById('quiz-screen');
 const resultsScreen = document.getElementById('results-screen');
+const authScreen = document.getElementById('auth-screen');
+const passcodeScreen = document.getElementById('passcode-screen');
+
+const userDisplay = document.getElementById('user-display');
+const loginIcon = document.getElementById('login-icon');
 
 const tableBtns = document.querySelectorAll('.table-btn');
 const startBtn = document.getElementById('start-btn');
@@ -25,11 +32,101 @@ const anotherGoBtn = document.getElementById('another-go-btn');
 const resetBtn = document.getElementById('reset-btn');
 
 const keypadBtns = document.querySelectorAll('.key-btn');
+const passKeypadBtns = document.querySelectorAll('.pass-key-btn');
+
+const usernameInput = document.getElementById('username-input');
+const loginModeBtn = document.getElementById('login-mode-btn');
+const registerModeBtn = document.getElementById('register-mode-btn');
+const cancelAuthBtn = document.getElementById('cancel-auth-btn');
+
+const passcodeTitle = document.getElementById('passcode-title');
+const passcodeInput = document.getElementById('passcode-input');
+const submitAuthBtn = document.getElementById('submit-auth-btn');
+const backAuthBtn = document.getElementById('back-auth-btn');
+const authFeedbackEl = document.getElementById('auth-feedback');
 
 // --- Screen Navigation ---
 function showScreen(screen) {
-    [configScreen, quizScreen, resultsScreen].forEach(s => s.style.display = 'none');
+    [configScreen, quizScreen, resultsScreen, authScreen, passcodeScreen].forEach(s => s.style.display = 'none');
     screen.style.display = 'block';
+}
+
+// --- Auth Logic ---
+loginIcon.addEventListener('click', () => {
+    usernameInput.value = '';
+    showScreen(authScreen);
+});
+
+cancelAuthBtn.addEventListener('click', () => showScreen(configScreen));
+
+loginModeBtn.addEventListener('click', () => startAuth('login'));
+registerModeBtn.addEventListener('click', () => startAuth('register'));
+
+function startAuth(mode) {
+    const name = usernameInput.value.trim();
+    if (!name) {
+        alert("Please enter a fun name!");
+        return;
+    }
+    authMode = mode;
+    passcodeTitle.textContent = mode === 'register' ? 'Create Passcode' : 'Enter Passcode';
+    passcodeInput.value = '';
+    authFeedbackEl.textContent = '';
+    showScreen(passcodeScreen);
+}
+
+backAuthBtn.addEventListener('click', () => showScreen(authScreen));
+
+passKeypadBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        const val = btn.textContent;
+        if (val === 'C') {
+            passcodeInput.value = '';
+        } else if (val === '⌫') {
+            passcodeInput.value = passcodeInput.value.slice(0, -1);
+        } else if (passcodeInput.value.length < 6) {
+            passcodeInput.value += val;
+        }
+    });
+});
+
+async function submitAuth() {
+    const name = usernameInput.value.trim();
+    const passcode = passcodeInput.value;
+
+    if (passcode.length < 4) {
+        showAuthFeedback("Passcode must be at least 4 numbers!", "wrong");
+        return;
+    }
+
+    showAuthFeedback("Working... ⏳", "");
+
+    try {
+        const response = await fetch('/api/AuthUser', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ mode: authMode, username: name, passcode: passcode })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            loggedInUser = data.user;
+            userDisplay.textContent = `Playing as: ${loggedInUser}`;
+            showScreen(configScreen);
+        } else {
+            showAuthFeedback(data.message || response.statusText, "wrong");
+        }
+    } catch (error) {
+        showAuthFeedback("Connection error! 🌐", "wrong");
+    }
+}
+
+submitAuthBtn.addEventListener('click', submitAuth);
+
+function showAuthFeedback(text, className) {
+    authFeedbackEl.textContent = text;
+    authFeedbackEl.className = 'feedback-area ' + className;
 }
 
 // --- Configuration Logic ---
@@ -51,12 +148,10 @@ tableBtns.forEach(btn => {
 function createQuestionPool() {
     let pool = [];
     selectedTables.forEach(t => {
-        // Multipliers 2-12 (No 1x)
         for (let i = 2; i <= 12; i++) {
             pool.push({ a: t, b: i, answer: t * i });
         }
     });
-    // Shuffle the pool
     return pool.sort(() => Math.random() - 0.5);
 }
 
@@ -64,7 +159,6 @@ function startQuiz() {
     questionPool = createQuestionPool();
     currentQuestionIndex = 0;
     score = 0;
-    
     scoreEl.textContent = '0';
     showQuestion();
     showScreen(quizScreen);
@@ -126,10 +220,11 @@ keypadBtns.forEach(btn => {
 
 submitBtn.addEventListener('click', checkAnswer);
 
-// Handle Enter key for non-keypad users
+// Handle Enter key
 document.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter' && quizScreen.style.display === 'block') {
-        checkAnswer();
+    if (e.key === 'Enter') {
+        if (quizScreen.style.display === 'block') checkAnswer();
+        else if (passcodeScreen.style.display === 'block') submitAuth();
     }
 });
 

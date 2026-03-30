@@ -8,6 +8,8 @@
 </head>
 <body>
     <div class="container">
+        <div id="user-display" class="user-display"></div>
+        <div id="login-icon" class="login-icon">👤</div>
         <h1>Maths Fun! 🧮</h1>
 
         <!-- Configuration Screen -->
@@ -78,6 +80,51 @@
                 <button id="another-go-btn" class="main-btn">Another Go?</button>
                 <button id="reset-btn" class="secondary-btn">Reset</button>
             </div>
+        </div>
+
+        <!-- Authentication Screen -->
+        <div id="auth-screen" style="display:none;">
+            <h2>Who is playing? 🎮</h2>
+            <p>Enter a fun name (not your real name):</p>
+            <input type="text" id="username-input" placeholder="e.g. SuperRobot" class="name-input">
+            <div class="auth-actions">
+                <button id="login-mode-btn" class="main-btn">Login</button>
+                <button id="register-mode-btn" class="secondary-btn">Register</button>
+                <button id="cancel-auth-btn" class="secondary-btn">Cancel</button>
+            </div>
+        </div>
+
+        <!-- Passcode Screen -->
+        <div id="passcode-screen" style="display:none;">
+            <h2 id="passcode-title">Create Passcode</h2>
+            <div class="passcode-display">
+                <input type="password" id="passcode-input" placeholder="****" readonly maxlength="6">
+            </div>
+            <div class="keypad">
+                <div class="keypad-row">
+                    <button class="pass-key-btn">1</button>
+                    <button class="pass-key-btn">2</button>
+                    <button class="pass-key-btn">3</button>
+                </div>
+                <div class="keypad-row">
+                    <button class="pass-key-btn">4</button>
+                    <button class="pass-key-btn">5</button>
+                    <button class="pass-key-btn">6</button>
+                </div>
+                <div class="keypad-row">
+                    <button class="pass-key-btn">7</button>
+                    <button class="pass-key-btn">8</button>
+                    <button class="pass-key-btn">9</button>
+                </div>
+                <div class="keypad-row">
+                    <button class="pass-key-btn" id="clear-pass-btn">C</button>
+                    <button class="pass-key-btn">0</button>
+                    <button class="pass-key-btn" id="del-pass-btn">⌫</button>
+                </div>
+            </div>
+            <button id="submit-auth-btn" class="main-btn">Go!</button>
+            <button id="back-auth-btn" class="secondary-btn">Back</button>
+            <div id="auth-feedback" class="feedback-area"></div>
         </div>
     </div>
     <script src="app.js"></script>
