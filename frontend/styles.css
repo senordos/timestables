@@ -118,6 +118,44 @@ p {
     margin-bottom: 10px;
 }
 
+/* Stats Styling */
+.stats-box {
+    background: #f9f9f9;
+    padding: 15px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    border: 2px dashed #2196f3;
+}
+
+.stats-box p {
+    font-weight: bold;
+    color: #2196f3;
+    margin-top: 0;
+}
+
+.table-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 5px;
+}
+
+.stat-item {
+    font-size: 0.7em;
+    padding: 5px;
+    border-radius: 5px;
+    background: #fff;
+    border: 1px solid #ddd;
+}
+
+.stat-val {
+    display: block;
+    font-weight: bold;
+}
+
+.stat-good { color: #4caf50; }
+.stat-bad { color: #f44336; }
+.stat-none { color: #ccc; }
+
 /* Auth Screens */
 .name-input {
     width: 80%;
@@ -233,7 +271,7 @@ input[type="number"] {
 /* Final Result UI */
 .final-score {
     font-size: 1.8em;
-    margin: 30px 0;
+    margin: 20px 0;
     color: #ff5722;
     font-weight: bold;
 }

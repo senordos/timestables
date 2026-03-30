@@ -80,7 +80,12 @@ def AuthUser(req: func.HttpRequest) -> func.HttpResponse:
                 "displayName": username,
                 "passcodeHash": passcode_hash,
                 "createdAt": datetime.now().isoformat(),
-                "stats": {}
+                "games": {
+                    "times_tables": {
+                        "playCount": 0,
+                        "history": []
+                    }
+                }
             }
             profiles.append(new_profile)
             blob_client.upload_blob(json.dumps(profiles, indent=2), overwrite=True, content_settings=ContentSettings(content_type='application/json'))
@@ -99,3 +104,73 @@ def AuthUser(req: func.HttpRequest) -> func.HttpResponse:
     except Exception as e:
         logging.error(f"Error in AuthUser: {str(e)}")
         return func.HttpResponse(json.dumps({"message": f"Server Error: {str(e)}"}), status_code=500)
+
+@app.route(route="SaveSession", methods=["POST"])
+def SaveSession(req: func.HttpRequest) -> func.HttpResponse:
+    try:
+        req_body = req.get_json()
+        username = req_body.get('username')
+        score = req_body.get('score')
+        details = req_body.get('details') # Array of {table, correct}
+
+        if not username or score is None or details is None:
+            return func.HttpResponse("Missing required fields", status_code=400)
+
+        username_norm = username.strip().lower()
+        blob_client = get_blob_client()
+        if not blob_client:
+            return func.HttpResponse("Storage error", status_code=500)
+
+        profiles = get_all_profiles(blob_client)
+        user_profile = next((p for p in profiles if p['username'] == username_norm), None)
+
+        if not user_profile:
+            return func.HttpResponse("User not found", status_code=404)
+
+        if 'games' not in user_profile:
+            user_profile['games'] = {"times_tables": {"playCount": 0, "history": []}}
+        
+        tt_game = user_profile['games']['times_tables']
+        tt_game['playCount'] += 1
+        
+        session = {
+            "date": datetime.now().isoformat(),
+            "score": score,
+            "details": details
+        }
+        tt_game['history'].append(session)
+        if len(tt_game['history']) > 20:
+            tt_game['history'].pop(0)
+
+        history = tt_game['history']
+        last_5 = history[-5:]
+        last_5_avg = sum(s['score'] for s in last_5) / (len(last_5) * 10) * 100
+
+        table_performance = {str(i): {"correct": 0, "total": 0} for i in range(2, 13)}
+        last_10 = history[-10:]
+        for s in last_10:
+            for d in s['details']:
+                t = str(d['table'])
+                if t in table_performance:
+                    table_performance[t]['total'] += 1
+                    if d['correct']:
+                        table_performance[t]['correct'] += 1
+
+        table_breakdown = {}
+        for t, data in table_performance.items():
+            if data['total'] > 0:
+                table_breakdown[t] = round((data['correct'] / data['total']) * 100)
+            else:
+                table_breakdown[t] = None
+
+        blob_client.upload_blob(json.dumps(profiles, indent=2), overwrite=True, content_settings=ContentSettings(content_type='application/json'))
+
+        return func.HttpResponse(json.dumps({
+            "playCount": tt_game['playCount'],
+            "last5Avg": round(last_5_avg),
+            "tableBreakdown": table_breakdown
+        }), status_code=200, mimetype="application/json")
+
+    except Exception as e:
+        logging.error(f"Error in SaveSession: {str(e)}")
+        return func.HttpResponse(f"Server Error: {str(e)}", status_code=500)

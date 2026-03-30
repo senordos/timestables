@@ -5,7 +5,8 @@ let currentQuestionIndex = 0;
 let score = 0;
 let currentQuestion = null;
 let loggedInUser = null;
-let authMode = null; // 'login' or 'register'
+let authMode = null; 
+let sessionDetails = []; // Array of {table, correct}
 
 // DOM Elements
 const configScreen = document.getElementById('config-screen');
@@ -28,6 +29,9 @@ const submitBtn = document.getElementById('submit-btn');
 const feedbackEl = document.getElementById('feedback');
 
 const finalScoreEl = document.getElementById('final-score');
+const statsSummary = document.getElementById('stats-summary');
+const last5AvgEl = document.getElementById('last-5-avg');
+const tableStatsGrid = document.getElementById('table-stats-grid');
 const anotherGoBtn = document.getElementById('another-go-btn');
 const resetBtn = document.getElementById('reset-btn');
 
@@ -115,11 +119,9 @@ async function submitAuth() {
             userDisplay.textContent = `Playing as: ${loggedInUser}`;
             showScreen(configScreen);
         } else {
-            console.error("Auth Error Data:", data);
             showAuthFeedback(data.message || response.statusText, "wrong");
         }
     } catch (error) {
-        console.error("Fetch Error:", error);
         showAuthFeedback("Connection error! 🌐", "wrong");
     }
 }
@@ -161,6 +163,7 @@ function startQuiz() {
     questionPool = createQuestionPool();
     currentQuestionIndex = 0;
     score = 0;
+    sessionDetails = [];
     scoreEl.textContent = '0';
     showQuestion();
     showScreen(quizScreen);
@@ -178,7 +181,12 @@ function checkAnswer() {
     const userAnswer = parseInt(answerInput.value);
     if (isNaN(userAnswer)) return;
 
-    if (userAnswer === currentQuestion.answer) {
+    const isCorrect = userAnswer === currentQuestion.answer;
+    
+    // Store details for stats (b is the tested table per requirement)
+    sessionDetails.push({ table: currentQuestion.b, correct: isCorrect });
+
+    if (isCorrect) {
         score++;
         scoreEl.textContent = score;
         showFeedback('Correct! 🌟', 'correct');
@@ -191,19 +199,67 @@ function checkAnswer() {
         if (currentQuestionIndex < 10 && currentQuestionIndex < questionPool.length) {
             showQuestion();
         } else {
-            showResults();
+            finishSession();
         }
     }, 1500);
+}
+
+async function finishSession() {
+    finalScoreEl.textContent = score;
+    statsSummary.style.display = 'none';
+
+    if (loggedInUser) {
+        try {
+            const response = await fetch('/api/SaveSession', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    username: loggedInUser, 
+                    score: score, 
+                    details: sessionDetails 
+                })
+            });
+            const stats = await response.json();
+            renderStats(stats);
+        } catch (e) {
+            console.error("Error saving stats:", e);
+        }
+    }
+    
+    showScreen(resultsScreen);
+}
+
+function renderStats(stats) {
+    last5AvgEl.textContent = stats.last5Avg;
+    tableStatsGrid.innerHTML = '';
+    
+    // Create items for tables 2-12
+    for (let i = 2; i <= 12; i++) {
+        const val = stats.tableBreakdown[i];
+        const item = document.createElement('div');
+        item.className = 'stat-item';
+        
+        let colorClass = 'stat-none';
+        let displayVal = '-';
+        
+        if (val !== null) {
+            displayVal = val + '%';
+            colorClass = val >= 80 ? 'stat-good' : (val < 50 ? 'stat-bad' : '');
+        }
+        
+        item.innerHTML = `
+            <span>${i}x</span>
+            <span class="stat-val ${colorClass}">${displayVal}</span>
+        `;
+        tableStatsGrid.appendChild(item);
+    }
+    
+    statsSummary.style.display = 'block';
 }
 
 function showFeedback(text, className) {
     feedbackEl.textContent = text;
     feedbackEl.className = 'feedback-area ' + className;
-}
-
-function showResults() {
-    finalScoreEl.textContent = score;
-    showScreen(resultsScreen);
 }
 
 // --- Keypad & Inputs ---
