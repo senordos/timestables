@@ -3,7 +3,9 @@ import logging
 import json
 import os
 import hashlib
+from datetime import datetime
 from azure.storage.blob import BlobServiceClient, ContentSettings
+
 app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
 @app.route(route="HealthCheck", methods=["GET"])
@@ -70,7 +72,7 @@ def AuthUser(req: func.HttpRequest) -> func.HttpResponse:
                 "username": username,
                 "passcodeHash": passcode_hash,
                 "displayName": req_body.get('username'), # Keep original casing for display
-                "createdAt": func.datetime.datetime.now().isoformat(),
+                "createdAt": datetime.now().isoformat(),
                 "stats": {}
             }
             
