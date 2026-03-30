@@ -52,6 +52,33 @@ def GetRawProfiles(req: func.HttpRequest) -> func.HttpResponse:
     profiles = get_all_profiles(blob_client)
     return func.HttpResponse(json.dumps(profiles, indent=2), status_code=200, mimetype="application/json")
 
+@app.route(route="DeleteUser", methods=["POST"])
+def DeleteUser(req: func.HttpRequest) -> func.HttpResponse:
+    try:
+        req_body = req.get_json()
+        username = req_body.get('username')
+
+        if not username:
+            return func.HttpResponse("Missing username", status_code=400)
+
+        username_norm = username.strip().lower()
+        blob_client = get_blob_client()
+        if not blob_client:
+            return func.HttpResponse("Storage error", status_code=500)
+
+        profiles = get_all_profiles(blob_client)
+        new_profiles = [p for p in profiles if p['username'] != username_norm]
+
+        if len(new_profiles) == len(profiles):
+            return func.HttpResponse("User not found", status_code=404)
+
+        blob_client.upload_blob(json.dumps(new_profiles, indent=2), overwrite=True, content_settings=ContentSettings(content_type='application/json'))
+        return func.HttpResponse(json.dumps({"message": "User deleted successfully"}), status_code=200)
+
+    except Exception as e:
+        logging.error(f"Error in DeleteUser: {str(e)}")
+        return func.HttpResponse(f"Server Error: {str(e)}", status_code=500)
+
 @app.route(route="AuthUser", methods=["POST"])
 def AuthUser(req: func.HttpRequest) -> func.HttpResponse:
     try:
