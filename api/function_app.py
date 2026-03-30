@@ -8,8 +8,8 @@ from azure.storage.blob import BlobServiceClient, ContentSettings
 app = func.FunctionApp(http_auth_level=func.AuthLevel.ANONYMOUS)
 
 # Blob Storage Configuration
-# AzureWebJobsStorage is the default connection string for the storage account associated with the Function App
-connection_string = os.environ.get("AzureWebJobsStorage")
+# AZURE_STORAGE_CONNECTION_STRING is the custom name for the storage account connection string
+connection_string = os.environ.get("AZURE_STORAGE_CONNECTION_STRING")
 container_name = "profiles"
 
 def get_blob_client(username):
