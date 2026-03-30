@@ -8,7 +8,7 @@ let loggedInUser = null;
 let isGuest = false;
 let authMode = null; 
 let sessionDetails = []; 
-let currentVisibleScreen = null; // Tracks current screen for reset cancel
+let currentVisibleScreen = null;
 
 // DOM Elements
 const configScreen = document.getElementById('config-screen');
@@ -56,17 +56,17 @@ const authNameFeedbackEl = document.getElementById('auth-name-feedback');
 const confirmResetYes = document.getElementById('confirm-reset-yes');
 const confirmResetNo = document.getElementById('confirm-reset-no');
 
+const API_HEADERS = { 
+    'Content-Type': 'application/json',
+    'X-App-Source': 'TimestablesApp' 
+};
+
 // --- Screen Navigation ---
 function showScreen(screen) {
     [configScreen, quizScreen, resultsScreen, authScreen, passcodeScreen, resetConfirmScreen].forEach(s => s.style.display = 'none');
     screen.style.display = (screen === resetConfirmScreen) ? 'flex' : 'block';
-    
-    // Tracks screen for cancel reset, only if it's not the reset screen itself
-    if (screen !== resetConfirmScreen) {
-        currentVisibleScreen = screen;
-    }
+    if (screen !== resetConfirmScreen) currentVisibleScreen = screen;
 
-    // Toggle global reset icon visibility
     if (screen === authScreen || screen === passcodeScreen || screen === resetConfirmScreen) {
         globalResetBtn.style.display = 'none';
     } else {
@@ -74,7 +74,6 @@ function showScreen(screen) {
     }
 }
 
-// Set initial screen
 showScreen(authScreen);
 
 // --- Auth Logic ---
@@ -95,6 +94,11 @@ function startAuth(mode) {
         authNameFeedbackEl.className = "feedback-area wrong";
         return;
     }
+    if (name.length > 15) {
+        authNameFeedbackEl.textContent = "Name too long! (Max 15) 📏";
+        authNameFeedbackEl.className = "feedback-area wrong";
+        return;
+    }
     authNameFeedbackEl.textContent = "";
     authMode = mode;
     passcodeTitle.textContent = mode === 'register' ? 'Create Passcode' : 'Enter Passcode';
@@ -106,17 +110,9 @@ function startAuth(mode) {
 backAuthBtn.addEventListener('click', () => showScreen(authScreen));
 
 // --- Reset Logic ---
-globalResetBtn.addEventListener('click', () => {
-    showScreen(resetConfirmScreen);
-});
-
-confirmResetNo.addEventListener('click', () => {
-    showScreen(currentVisibleScreen);
-});
-
-confirmResetYes.addEventListener('click', () => {
-    resetToStart();
-});
+globalResetBtn.addEventListener('click', () => showScreen(resetConfirmScreen));
+confirmResetNo.addEventListener('click', () => showScreen(currentVisibleScreen));
+confirmResetYes.addEventListener('click', () => resetToStart());
 
 function resetToStart() {
     loggedInUser = null;
@@ -132,13 +128,9 @@ function resetToStart() {
 passKeypadBtns.forEach(btn => {
     btn.addEventListener('click', () => {
         const val = btn.textContent;
-        if (val === 'C') {
-            passcodeInput.value = '';
-        } else if (val === '⌫') {
-            passcodeInput.value = passcodeInput.value.slice(0, -1);
-        } else if (passcodeInput.value.length < 4) { // Capped at 4 digits
-            passcodeInput.value += val;
-        }
+        if (val === 'C') passcodeInput.value = '';
+        else if (val === '⌫') passcodeInput.value = passcodeInput.value.slice(0, -1);
+        else if (passcodeInput.value.length < 4) passcodeInput.value += val;
     });
 });
 
@@ -156,7 +148,7 @@ async function submitAuth() {
     try {
         const response = await fetch('/api/AuthUser', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: API_HEADERS,
             body: JSON.stringify({ mode: authMode, username: name, passcode: passcode })
         });
 
@@ -259,7 +251,7 @@ async function finishSession() {
         try {
             const response = await fetch('/api/SaveSession', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: API_HEADERS,
                 body: JSON.stringify({ 
                     username: loggedInUser, 
                     score: score, 
@@ -272,7 +264,6 @@ async function finishSession() {
             console.error("Error saving stats:", e);
         }
     }
-    
     showScreen(resultsScreen);
 }
 
@@ -304,13 +295,9 @@ function showFeedback(text, className) {
 keypadBtns.forEach(btn => {
     btn.addEventListener('click', () => {
         const val = btn.textContent;
-        if (val === 'C') {
-            answerInput.value = '';
-        } else if (val === '⌫') {
-            answerInput.value = answerInput.value.slice(0, -1);
-        } else {
-            answerInput.value += val;
-        }
+        if (val === 'C') answerInput.value = '';
+        else if (val === '⌫') answerInput.value = answerInput.value.slice(0, -1);
+        else answerInput.value += val;
     });
 });
 
@@ -325,6 +312,4 @@ document.addEventListener('keypress', (e) => {
 
 startBtn.addEventListener('click', startQuiz);
 anotherGoBtn.addEventListener('click', startQuiz);
-resetBtn.addEventListener('click', () => {
-    showScreen(configScreen);
-});
+resetBtn.addEventListener('click', () => showScreen(configScreen));
