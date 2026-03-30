@@ -102,6 +102,9 @@ def AuthUser(req: func.HttpRequest) -> func.HttpResponse:
             if any(p['username'] == username_norm for p in profiles):
                 return func.HttpResponse(json.dumps({"message": "Username already exists"}), status_code=409)
             
+            if len(profiles) >= 15:
+                return func.HttpResponse(json.dumps({"message": "User limit reached (max 15). Please contact the admin."}), status_code=403)
+            
             new_profile = {
                 "username": username_norm,
                 "displayName": username,
