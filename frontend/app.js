@@ -5,6 +5,7 @@ let currentQuestionIndex = 0;
 let score = 0;
 let currentQuestion = null;
 let loggedInUser = null;
+let isGuest = false;
 let authMode = null; 
 let sessionDetails = []; // Array of {table, correct}
 
@@ -16,7 +17,7 @@ const authScreen = document.getElementById('auth-screen');
 const passcodeScreen = document.getElementById('passcode-screen');
 
 const userDisplay = document.getElementById('user-display');
-const loginIcon = document.getElementById('login-icon');
+const globalResetBtn = document.getElementById('global-reset-btn');
 
 const tableBtns = document.querySelectorAll('.table-btn');
 const startBtn = document.getElementById('start-btn');
@@ -41,7 +42,7 @@ const passKeypadBtns = document.querySelectorAll('.pass-key-btn');
 const usernameInput = document.getElementById('username-input');
 const loginModeBtn = document.getElementById('login-mode-btn');
 const registerModeBtn = document.getElementById('register-mode-btn');
-const cancelAuthBtn = document.getElementById('cancel-auth-btn');
+const guestBtn = document.getElementById('guest-btn');
 
 const passcodeTitle = document.getElementById('passcode-title');
 const passcodeInput = document.getElementById('passcode-input');
@@ -54,19 +55,25 @@ const authNameFeedbackEl = document.getElementById('auth-name-feedback');
 function showScreen(screen) {
     [configScreen, quizScreen, resultsScreen, authScreen, passcodeScreen].forEach(s => s.style.display = 'none');
     screen.style.display = 'block';
+    
+    // Toggle global reset icon visibility
+    if (screen === authScreen || screen === passcodeScreen) {
+        globalResetBtn.style.display = 'none';
+    } else {
+        globalResetBtn.style.display = 'flex';
+    }
 }
 
 // --- Auth Logic ---
-loginIcon.addEventListener('click', () => {
-    usernameInput.value = '';
-    authNameFeedbackEl.textContent = '';
-    showScreen(authScreen);
-});
-
-cancelAuthBtn.addEventListener('click', () => showScreen(configScreen));
-
 loginModeBtn.addEventListener('click', () => startAuth('login'));
 registerModeBtn.addEventListener('click', () => startAuth('register'));
+
+guestBtn.addEventListener('click', () => {
+    isGuest = true;
+    loggedInUser = null;
+    userDisplay.textContent = 'Playing as Guest';
+    showScreen(configScreen);
+});
 
 function startAuth(mode) {
     const name = usernameInput.value.trim();
@@ -84,6 +91,23 @@ function startAuth(mode) {
 }
 
 backAuthBtn.addEventListener('click', () => showScreen(authScreen));
+
+globalResetBtn.addEventListener('click', () => {
+    if (confirm("Are you sure? Your progress will be lost.")) {
+        resetToStart();
+    }
+});
+
+function resetToStart() {
+    loggedInUser = null;
+    isGuest = false;
+    selectedTables.clear();
+    tableBtns.forEach(b => b.classList.remove('selected'));
+    startBtn.disabled = true;
+    userDisplay.textContent = '';
+    usernameInput.value = '';
+    showScreen(authScreen);
+}
 
 passKeypadBtns.forEach(btn => {
     btn.addEventListener('click', () => {
@@ -120,14 +144,13 @@ async function submitAuth() {
 
         if (response.ok) {
             loggedInUser = data.user;
+            isGuest = false;
             userDisplay.textContent = `Playing as: ${loggedInUser}`;
             showScreen(configScreen);
         } else {
-            console.error("Auth Error Data:", data);
             showAuthFeedback(data.message || response.statusText, "wrong");
         }
     } catch (error) {
-        console.error("Fetch Error:", error);
         showAuthFeedback("Connection error! 🌐", "wrong");
     }
 }
@@ -158,14 +181,10 @@ tableBtns.forEach(btn => {
 function createQuestionPool() {
     let pool = [];
     selectedTables.forEach(t => {
-        // t is the "Tested Table" (the second number per requirement)
-        // Multipliers 2-12 (No 1x)
         for (let i = 2; i <= 12; i++) {
-            // Formula: i x t = ? (e.g., 4 x 2)
             pool.push({ a: i, b: t, answer: i * t });
         }
     });
-    // Shuffle the pool
     return pool.sort(() => Math.random() - 0.5);
 }
 
@@ -192,8 +211,6 @@ function checkAnswer() {
     if (isNaN(userAnswer)) return;
 
     const isCorrect = userAnswer === currentQuestion.answer;
-    
-    // Store details for stats (b is the tested table per requirement)
     sessionDetails.push({ table: currentQuestion.b, correct: isCorrect });
 
     if (isCorrect) {
@@ -218,7 +235,7 @@ async function finishSession() {
     finalScoreEl.textContent = score;
     statsSummary.style.display = 'none';
 
-    if (loggedInUser) {
+    if (loggedInUser && !isGuest) {
         try {
             const response = await fetch('/api/SaveSession', {
                 method: 'POST',
@@ -242,28 +259,19 @@ async function finishSession() {
 function renderStats(stats) {
     last5AvgEl.textContent = stats.last5Avg;
     tableStatsGrid.innerHTML = '';
-    
-    // Create items for tables 2-12
     for (let i = 2; i <= 12; i++) {
         const val = stats.tableBreakdown[i];
         const item = document.createElement('div');
         item.className = 'stat-item';
-        
         let colorClass = 'stat-none';
         let displayVal = '-';
-        
         if (val !== null) {
             displayVal = val + '%';
             colorClass = val >= 80 ? 'stat-good' : (val < 50 ? 'stat-bad' : '');
         }
-        
-        item.innerHTML = `
-            <span>${i}x</span>
-            <span class="stat-val ${colorClass}">${displayVal}</span>
-        `;
+        item.innerHTML = `<span>${i}x</span><span class="stat-val ${colorClass}">${displayVal}</span>`;
         tableStatsGrid.appendChild(item);
     }
-    
     statsSummary.style.display = 'block';
 }
 
@@ -288,7 +296,6 @@ keypadBtns.forEach(btn => {
 
 submitBtn.addEventListener('click', checkAnswer);
 
-// Handle Enter key
 document.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
         if (quizScreen.style.display === 'block') checkAnswer();
@@ -296,12 +303,8 @@ document.addEventListener('keypress', (e) => {
     }
 });
 
-// --- Actions ---
 startBtn.addEventListener('click', startQuiz);
 anotherGoBtn.addEventListener('click', startQuiz);
 resetBtn.addEventListener('click', () => {
-    selectedTables.clear();
-    tableBtns.forEach(b => b.classList.remove('selected'));
-    startBtn.disabled = true;
     showScreen(configScreen);
 });
