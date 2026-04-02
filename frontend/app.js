@@ -405,11 +405,7 @@ document.addEventListener('keypress', (e) => {
 });
 
 startBtn.addEventListener('click', startQuiz);
-anotherGoBtn.addEventListener('click', () => {
-    // BUG FIX: Bypass config screen if tables are already selected
-    if (selectedTables.size > 0) startQuiz();
-    else showScreen(configScreen);
-});
+anotherGoBtn.addEventListener('click', startQuiz);
 resetBtn.addEventListener('click', () => {
     // Takes user back to start (auth screen)
     resetToStart();
