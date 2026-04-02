@@ -10,6 +10,7 @@ let authMode = null;
 let sessionDetails = []; 
 let currentVisibleScreen = null;
 let adultPin = "";
+let isTransitioning = false; // NEW: Prevents double-answering and skipping
 
 // DOM Elements
 const configScreen = document.getElementById('config-screen');
@@ -80,7 +81,6 @@ function showScreen(screen) {
         currentVisibleScreen = screen;
     }
 
-    // Nav Icons visibility
     if (screen === authScreen || screen === passcodeScreen || screen === resetConfirmScreen || screen === adultLockScreen) {
         settingsIcon.style.display = 'none';
         globalResetBtn.style.display = 'none';
@@ -150,10 +150,9 @@ async function submitAuth() {
             isGuest = false;
             userDisplay.textContent = `Playing as: ${loggedInUser}`;
             
-            // Check for existing config
             if (data.config && Object.keys(data.config).length > 0) {
                 applyConfig(data.config);
-                startQuiz();
+                startQuiz(); // Bypass config screen
             } else {
                 showScreen(configScreen);
             }
@@ -203,12 +202,10 @@ function applyConfig(config) {
 
 async function saveConfig() {
     if (!loggedInUser || isGuest) return;
-    
     const config = {};
     for (let i = 2; i <= 12; i++) {
         config[i] = selectedTables.has(i);
     }
-
     try {
         await fetch('/api/UpdateConfig', {
             method: 'POST',
@@ -281,8 +278,12 @@ function createQuestionPool() {
 }
 
 function startQuiz() {
-    if (selectedTables.size === 0) return;
-    saveConfig(); // Persist selection
+    if (selectedTables.size === 0) {
+        showScreen(configScreen); // Safety fallback
+        return;
+    }
+    isTransitioning = false;
+    saveConfig(); 
     questionPool = createQuestionPool();
     currentQuestionIndex = 0;
     score = 0;
@@ -301,9 +302,12 @@ function showQuestion() {
 }
 
 function checkAnswer() {
+    if (isTransitioning) return; // Prevent double-clicks
+
     const userAnswer = parseInt(answerInput.value);
     if (isNaN(userAnswer)) return;
 
+    isTransitioning = true;
     const isCorrect = userAnswer === currentQuestion.answer;
     sessionDetails.push({ table: currentQuestion.b, correct: isCorrect });
 
@@ -316,6 +320,7 @@ function checkAnswer() {
     }
 
     setTimeout(() => {
+        isTransitioning = false;
         currentQuestionIndex++;
         if (currentQuestionIndex < 10 && currentQuestionIndex < questionPool.length) {
             showQuestion();
@@ -400,5 +405,12 @@ document.addEventListener('keypress', (e) => {
 });
 
 startBtn.addEventListener('click', startQuiz);
-anotherGoBtn.addEventListener('click', startQuiz);
-resetBtn.addEventListener('click', () => showScreen(configScreen));
+anotherGoBtn.addEventListener('click', () => {
+    // BUG FIX: Bypass config screen if tables are already selected
+    if (selectedTables.size > 0) startQuiz();
+    else showScreen(configScreen);
+});
+resetBtn.addEventListener('click', () => {
+    // Takes user back to start (auth screen)
+    resetToStart();
+});
