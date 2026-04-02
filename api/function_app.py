@@ -92,6 +92,14 @@ def get_all_data(blob_client):
 def verify_request(req):
     return req.headers.get(APP_SOURCE_HEADER) == APP_SOURCE_VALUE
 
+def get_blob_and_data():
+    client = get_blob_client()
+    if not client: return None, None
+    return client, get_all_data(client)
+
+def save_data(client, data):
+    client.upload_blob(json.dumps(data, indent=2), overwrite=True, content_settings=ContentSettings(content_type='application/json'))
+
 @app.route(route="HealthCheck", methods=["GET"])
 def HealthCheck(req: func.HttpRequest) -> func.HttpResponse:
     return func.HttpResponse("API is up and running!", status_code=200)
@@ -151,26 +159,14 @@ def UpdateConfig(req: func.HttpRequest) -> func.HttpResponse:
     if not verify_request(req): return func.HttpResponse("Forbidden", status_code=403)
     try:
         req_body = req.get_json()
-        username = req_body.get('username')
-        new_config = req_body.get('config')
-        admin_key = req_body.get('adminKey')
-
-        # If it's an update from the adult settings icon, check key
-        # If it's the first-run setup, we might skip it or rely on the source header
-        # Per requirement: "password protected... which takes you back into existing config screen"
-        # So navigating to the screen is protected. The save itself should probably be fine
-        # as long as the source header matches.
-
-        blob_client = get_blob_client()
-        data = get_all_data(blob_client)
-        username_norm = username.strip().lower()
-        user = next((p for p in data["users"] if p['username'] == username_norm), None)
+        username, new_config = req_body.get('username'), req_body.get('config')
+        client, data = get_blob_and_data()
+        user = next((p for p in data["users"] if p['username'] == username.strip().lower()), None)
         if not user: return func.HttpResponse("User not found", status_code=404)
-
         user['games']['times_tables']['config'] = new_config
-        blob_client.upload_blob(json.dumps(data, indent=2), overwrite=True, content_settings=ContentSettings(content_type='application/json'))
+        save_data(client, data)
         return func.HttpResponse("Config updated", status_code=200)
-    except Exception as e: return func.HttpResponse(f"Error: {str(e)}", status_code=500)
+    except Exception as e: return func.HttpResponse(str(e), status_code=500)
 
 @app.route(route="AuthUser", methods=["POST"])
 def AuthUser(req: func.HttpRequest) -> func.HttpResponse:
@@ -180,22 +176,19 @@ def AuthUser(req: func.HttpRequest) -> func.HttpResponse:
         mode, username, passcode = req_body.get('mode'), req_body.get('username'), req_body.get('passcode')
         if not username or not passcode or not mode: return func.HttpResponse("Missing fields", status_code=400)
         if len(username) > 15: return func.HttpResponse(json.dumps({"message": "Name too long"}), status_code=400)
-        blob_client = get_blob_client()
-        data = get_all_data(blob_client)
-        username_norm = username.strip().lower()
-        passcode_hash = hash_data(passcode)
+        client, data = get_blob_and_data()
+        username_norm, passcode_hash = username.strip().lower(), hash_data(passcode)
         if mode == 'register':
             if any(p['username'] == username_norm for p in data["users"]): return func.HttpResponse(json.dumps({"message": "Name taken"}), status_code=409)
             if len(data["users"]) >= 15: return func.HttpResponse(json.dumps({"message": "Limit reached"}), status_code=403)
             new_user = {"username": username_norm, "displayName": username, "passcodeHash": passcode_hash, "createdAt": datetime.now().isoformat(), "games": {"times_tables": init_tt_stats()}}
             data["users"].append(new_user)
-            blob_client.upload_blob(json.dumps(data, indent=2), overwrite=True, content_settings=ContentSettings(content_type='application/json'))
+            save_data(client, data)
             return func.HttpResponse(json.dumps({"message": "Success", "user": username, "config": {}}), status_code=201)
         elif mode == 'login':
             user = next((p for p in data["users"] if p['username'] == username_norm), None)
             if user and user['passcodeHash'] == passcode_hash:
-                config = user['games'].get('times_tables', {}).get('config', {})
-                return func.HttpResponse(json.dumps({"message": "Success", "user": user['displayName'], "config": config}), status_code=200)
+                return func.HttpResponse(json.dumps({"message": "Success", "user": user['displayName'], "config": user['games']['times_tables'].get('config', {})}), status_code=200)
             return func.HttpResponse(json.dumps({"message": "Auth failed"}), status_code=401)
     except Exception as e: return func.HttpResponse(json.dumps({"message": str(e)}), status_code=500)
 
@@ -206,10 +199,8 @@ def SaveSession(req: func.HttpRequest) -> func.HttpResponse:
         req_body = req.get_json()
         username, score, details = req_body.get('username'), req_body.get('score'), req_body.get('details')
         if not details or len(details) > 10: return func.HttpResponse("Invalid data", status_code=400)
-        blob_client = get_blob_client()
-        data = get_all_data(blob_client)
-        username_norm = username.strip().lower()
-        user = next((p for p in data["users"] if p['username'] == username_norm), None)
+        client, data = get_blob_and_data()
+        user = next((p for p in data["users"] if p['username'] == username.strip().lower()), None)
         if not user: return func.HttpResponse("User not found", status_code=404)
         tt = user['games']['times_tables']
         tt['playCount'] += 1
@@ -218,18 +209,15 @@ def SaveSession(req: func.HttpRequest) -> func.HttpResponse:
         tt['last5Scores'] = update_rolling_array(tt['last5Scores'], score * 10)
         table_results = {}
         for d in details:
-            t = d['table']
+            t = str(d['table'])
             if t not in table_results: table_results[t] = {"c": 0, "t": 0}
             table_results[t]['t'] += 1
             if d['correct']: table_results[t]['c'] += 1
         for t, res in table_results.items():
             perc = round((res['c'] / res['t']) * 100)
             for ts in tt['tableStats']:
-                if ts['table'] == t: ts['last5'] = update_rolling_array(ts['last5'], perc)
-        blob_client.upload_blob(json.dumps(data, indent=2), overwrite=True, content_settings=ContentSettings(content_type='application/json'))
-        def avg_filter_null(arr):
-            vals = [v for v in arr if v is not None]
-            return round(sum(vals) / len(vals)) if vals else None
-        table_breakdown = {str(ts['table']): avg_filter_null(ts['last5']) for ts in tt['tableStats']}
-        return func.HttpResponse(json.dumps({"playCount": tt['playCount'], "last5Avg": avg_filter_null(tt['last5Scores']), "tableBreakdown": table_breakdown}), status_code=200, mimetype="application/json")
-    except Exception as e: return func.HttpResponse(f"Error: {str(e)}", status_code=500)
+                if str(ts['table']) == t: ts['last5'] = update_rolling_array(ts['last5'], perc)
+        save_data(client, data)
+        avg = lambda arr: round(sum(v for v in arr if v is not None) / len([v for v in arr if v is not None])) if any(v is not None for v in arr) else None
+        return func.HttpResponse(json.dumps({"playCount": tt['playCount'], "last5Avg": avg(tt['last5Scores']), "tableBreakdown": {str(ts['table']): avg(ts['last5']) for ts in tt['tableStats']}}), status_code=200, mimetype="application/json")
+    except Exception as e: return func.HttpResponse(str(e), status_code=500)
