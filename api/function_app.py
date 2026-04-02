@@ -37,7 +37,16 @@ def init_tt_stats():
         "overallCorrect": 0,
         "last5Scores": [None] * 5,
         "tableStats": [{"table": i, "last5": [None] * 5} for i in range(2, 13)],
-        "config": {} # e.g. {"2": true, "3": false ...}
+        "config": {}
+    }
+
+def init_story_stats():
+    return {
+        "playCount": 0,
+        "overallTotal": 0,
+        "overallCorrect": 0,
+        "last5Scores": [None] * 5,
+        "config": {"difficulty": "easy"}
     }
 
 def update_rolling_array(arr, val):
@@ -46,14 +55,21 @@ def update_rolling_array(arr, val):
 
 def migrate_user(user):
     if 'games' not in user:
-        user['games'] = {"times_tables": init_tt_stats()}
+        user['games'] = {
+            "times_tables": init_tt_stats(),
+            "story_maths": init_story_stats()
+        }
         return user
     
-    tt = user['games'].get('times_tables', {})
-    
-    # Ensure config exists
-    if 'config' not in tt:
-        tt['config'] = {}
+    # Ensure all game types exist
+    if "times_tables" not in user['games']:
+        user['games']["times_tables"] = init_tt_stats()
+    if "story_maths" not in user['games']:
+        user['games']["story_maths"] = init_story_stats()
+
+    tt = user['games']["times_tables"]
+    # Ensure tt config exists
+    if 'config' not in tt: tt['config'] = {}
 
     if 'history' in tt:
         history = tt['history']
@@ -77,6 +93,14 @@ def migrate_user(user):
         user['games']['times_tables'] = new_stats
     return user
 
+def get_blob_and_data():
+    client = get_blob_client()
+    if not client: return None, None
+    return client, get_all_data(client)
+
+def save_data(client, data):
+    client.upload_blob(json.dumps(data, indent=2), overwrite=True, content_settings=ContentSettings(content_type='application/json'))
+
 def get_all_data(blob_client):
     if not blob_client.exists(): return {"users": []}
     try:
@@ -91,14 +115,6 @@ def get_all_data(blob_client):
 
 def verify_request(req):
     return req.headers.get(APP_SOURCE_HEADER) == APP_SOURCE_VALUE
-
-def get_blob_and_data():
-    client = get_blob_client()
-    if not client: return None, None
-    return client, get_all_data(client)
-
-def save_data(client, data):
-    client.upload_blob(json.dumps(data, indent=2), overwrite=True, content_settings=ContentSettings(content_type='application/json'))
 
 @app.route(route="HealthCheck", methods=["GET"])
 def HealthCheck(req: func.HttpRequest) -> func.HttpResponse:
@@ -126,7 +142,8 @@ def AdminAuth(req: func.HttpRequest) -> func.HttpResponse:
             blob_client.upload_blob(json.dumps(data, indent=2), overwrite=True, content_settings=ContentSettings(content_type='application/json'))
             return func.HttpResponse("Setup successful", status_code=201)
         elif mode == 'login':
-            if "admin" in data and data["admin"]["pinHash"] == pin_hash: return func.HttpResponse("Login successful", status_code=200)
+            if "admin" in data and data["admin"]["pinHash"] == pin_hash:
+                return func.HttpResponse("Login successful", status_code=200)
             return func.HttpResponse("Unauthorized", status_code=401)
     except Exception as e: return func.HttpResponse(f"Error: {str(e)}", status_code=500)
 
@@ -159,11 +176,17 @@ def UpdateConfig(req: func.HttpRequest) -> func.HttpResponse:
     if not verify_request(req): return func.HttpResponse("Forbidden", status_code=403)
     try:
         req_body = req.get_json()
-        username, new_config = req_body.get('username'), req_body.get('config')
+        username, game_type, new_config = req_body.get('username'), req_body.get('gameType', 'times_tables'), req_body.get('config')
         client, data = get_blob_and_data()
         user = next((p for p in data["users"] if p['username'] == username.strip().lower()), None)
         if not user: return func.HttpResponse("User not found", status_code=404)
-        user['games']['times_tables']['config'] = new_config
+        
+        if game_type not in user['games']:
+            # Fallback initialization
+            if game_type == 'story_maths': user['games'][game_type] = init_story_stats()
+            else: user['games'][game_type] = {"playCount": 0, "overallTotal": 0, "overallCorrect": 0, "last5Scores": [None] * 5, "config": {}}
+        
+        user['games'][game_type]['config'] = new_config
         save_data(client, data)
         return func.HttpResponse("Config updated", status_code=200)
     except Exception as e: return func.HttpResponse(str(e), status_code=500)
@@ -181,14 +204,14 @@ def AuthUser(req: func.HttpRequest) -> func.HttpResponse:
         if mode == 'register':
             if any(p['username'] == username_norm for p in data["users"]): return func.HttpResponse(json.dumps({"message": "Name taken"}), status_code=409)
             if len(data["users"]) >= 15: return func.HttpResponse(json.dumps({"message": "Limit reached"}), status_code=403)
-            new_user = {"username": username_norm, "displayName": username, "passcodeHash": passcode_hash, "createdAt": datetime.now().isoformat(), "games": {"times_tables": init_tt_stats()}}
+            new_user = {"username": username_norm, "displayName": username, "passcodeHash": passcode_hash, "createdAt": datetime.now().isoformat(), "games": {"times_tables": init_tt_stats(), "story_maths": init_story_stats()}}
             data["users"].append(new_user)
             save_data(client, data)
-            return func.HttpResponse(json.dumps({"message": "Success", "user": username, "config": {}}), status_code=201)
+            return func.HttpResponse(json.dumps({"message": "Success", "user": username, "games": new_user["games"]}), status_code=201)
         elif mode == 'login':
             user = next((p for p in data["users"] if p['username'] == username_norm), None)
             if user and user['passcodeHash'] == passcode_hash:
-                return func.HttpResponse(json.dumps({"message": "Success", "user": user['displayName'], "config": user['games']['times_tables'].get('config', {})}), status_code=200)
+                return func.HttpResponse(json.dumps({"message": "Success", "user": user['displayName'], "games": user["games"]}), status_code=200)
             return func.HttpResponse(json.dumps({"message": "Auth failed"}), status_code=401)
     except Exception as e: return func.HttpResponse(json.dumps({"message": str(e)}), status_code=500)
 
@@ -197,27 +220,46 @@ def SaveSession(req: func.HttpRequest) -> func.HttpResponse:
     if not verify_request(req): return func.HttpResponse("Forbidden", status_code=403)
     try:
         req_body = req.get_json()
-        username, score, details = req_body.get('username'), req_body.get('score'), req_body.get('details')
-        if not details or len(details) > 10: return func.HttpResponse("Invalid data", status_code=400)
+        username, game_type, score, details = req_body.get('username'), req_body.get('gameType', 'times_tables'), req_body.get('score'), req_body.get('details')
+        if details is None: return func.HttpResponse("Invalid data", status_code=400)
         client, data = get_blob_and_data()
         user = next((p for p in data["users"] if p['username'] == username.strip().lower()), None)
         if not user: return func.HttpResponse("User not found", status_code=404)
-        tt = user['games']['times_tables']
-        tt['playCount'] += 1
-        tt['overallTotal'] += 10
-        tt['overallCorrect'] += score
-        tt['last5Scores'] = update_rolling_array(tt['last5Scores'], score * 10)
-        table_results = {}
-        for d in details:
-            t = str(d['table'])
-            if t not in table_results: table_results[t] = {"c": 0, "t": 0}
-            table_results[t]['t'] += 1
-            if d['correct']: table_results[t]['c'] += 1
-        for t, res in table_results.items():
-            perc = round((res['c'] / res['t']) * 100)
-            for ts in tt['tableStats']:
-                if str(ts['table']) == t: ts['last5'] = update_rolling_array(ts['last5'], perc)
+        
+        if game_type not in user['games']:
+            if game_type == 'story_maths': user['games'][game_type] = init_story_stats()
+            else: user['games'][game_type] = {"playCount": 0, "overallTotal": 0, "overallCorrect": 0, "last5Scores": [None] * 5, "config": {}}
+            
+        game = user['games'][game_type]
+        game['playCount'] += 1
+        num_questions = len(details)
+        game['overallTotal'] += num_questions
+        game['overallCorrect'] += score
+        game['last5Scores'] = update_rolling_array(game['last5Scores'], round((score / num_questions) * 100) if num_questions > 0 else 0)
+
+        # Table-specific stats only for times_tables
+        if game_type == 'times_tables' and 'tableStats' in game:
+            table_results = {}
+            for d in details:
+                t = str(d['table'])
+                if t not in table_results: table_results[t] = {"c": 0, "t": 0}
+                table_results[t]['t'] += 1
+                if d['correct']: table_results[t]['c'] += 1
+            for t, res in table_results.items():
+                perc = round((res['c'] / res['t']) * 100)
+                for ts in game['tableStats']:
+                    if str(ts['table']) == t: ts['last5'] = update_rolling_array(ts['last5'], perc)
+
         save_data(client, data)
+        
         avg = lambda arr: round(sum(v for v in arr if v is not None) / len([v for v in arr if v is not None])) if any(v is not None for v in arr) else None
-        return func.HttpResponse(json.dumps({"playCount": tt['playCount'], "last5Avg": avg(tt['last5Scores']), "tableBreakdown": {str(ts['table']): avg(ts['last5']) for ts in tt['tableStats']}}), status_code=200, mimetype="application/json")
+        
+        result = {
+            "playCount": game['playCount'],
+            "last5Avg": avg(game['last5Scores'])
+        }
+        if game_type == 'times_tables' and 'tableStats' in game:
+            result["tableBreakdown"] = {str(ts['table']): avg(ts['last5']) for ts in game['tableStats']}
+            
+        return func.HttpResponse(json.dumps(result), status_code=200, mimetype="application/json")
     except Exception as e: return func.HttpResponse(str(e), status_code=500)

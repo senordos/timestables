@@ -79,7 +79,7 @@ p {
     margin-bottom: 15px;
 }
 
-/* Overlays (Reset & Adult Lock) */
+/* Overlays */
 #reset-confirm-screen, #adult-lock-screen {
     position: absolute;
     top: 0;
@@ -98,7 +98,6 @@ p {
     width: 85%;
 }
 
-/* PIN Display for Overlays */
 .pin-display {
     font-size: 2.5em;
     letter-spacing: 10px;
@@ -132,7 +131,7 @@ p {
     font-weight: bold;
 }
 
-.table-btn.selected {
+.table-btn.selected, .difficulty-btn.selected {
     background-color: #4caf50;
     color: white;
     border-color: #388e3c;
@@ -269,7 +268,7 @@ p {
 
 .feedback-area {
     height: 35px;
-    font-size: 1.4em;
+    font-size: 1.2em;
     font-weight: bold;
     margin-top: 10px;
 }
@@ -287,9 +286,13 @@ p {
 }
 
 .question-container {
-    font-size: 3em;
+    font-size: 1.8em; /* Smaller for story text */
     margin: 20px 0;
     color: #2196f3;
+    min-height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .input-area {

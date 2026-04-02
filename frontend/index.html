@@ -64,8 +64,18 @@
             <div id="auth-feedback" class="feedback-area"></div>
         </div>
 
-        <!-- Configuration Screen -->
+        <!-- Game Selection Screen -->
+        <div id="game-selection-screen" style="display:none;">
+            <h2>Choose a Game! 🚀</h2>
+            <div class="auth-actions">
+                <button id="play-tt-btn" class="main-btn">Times Tables</button>
+                <button id="play-story-btn" class="main-btn" style="background-color: #2196f3;">Story Maths</button>
+            </div>
+        </div>
+
+        <!-- Times Tables Config Screen -->
         <div id="config-screen" style="display:none;">
+            <h2>Times Tables Setup</h2>
             <p>Pick your timestables:</p>
             <div id="table-selection" class="button-grid">
                 <button class="table-btn" data-value="2">2</button>
@@ -81,12 +91,25 @@
                 <button class="table-btn" data-value="12">12</button>
             </div>
             <button id="start-btn" class="main-btn" disabled>Start Quiz!</button>
+            <button class="secondary-btn back-to-selection">Back to Games</button>
+        </div>
+
+        <!-- Story Maths Config Screen -->
+        <div id="story-config-screen" style="display:none;">
+            <h2>Story Maths Setup</h2>
+            <p>Choose difficulty:</p>
+            <div class="auth-actions">
+                <button class="difficulty-btn main-btn selected" data-value="easy">Easy (2 Steps)</button>
+                <button class="difficulty-btn main-btn" data-value="hard" style="background-color: #f44336;">Hard (3 Steps)</button>
+            </div>
+            <button id="start-story-btn" class="main-btn">Start Stories!</button>
+            <button class="secondary-btn back-to-selection">Back to Games</button>
         </div>
 
         <!-- Quiz Screen -->
         <div id="quiz-screen" style="display:none;">
             <div class="quiz-info">
-                <span>Question: <span id="question-num">1</span> / 10</span>
+                <span>Question: <span id="question-num">1</span> / <span id="question-total">10</span></span>
                 <span>Score: <span id="score">0</span></span>
             </div>
             <div class="question-container">
@@ -125,7 +148,7 @@
         <div id="results-screen" style="display:none;">
             <h2>Quiz Finished! 🏁</h2>
             <div class="final-score">
-                You scored <span id="final-score">0</span> out of 10!
+                You scored <span id="final-score">0</span> out of <span id="result-total">10</span>!
             </div>
             
             <div id="stats-summary" style="display:none;" class="stats-box">
