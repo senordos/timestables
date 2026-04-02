@@ -177,26 +177,6 @@ settingsIcon.addEventListener('click', () => {
 
 adultLockCancel.addEventListener('click', () => showScreen(currentVisibleScreen));
 
-adultKeypadBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-        const val = btn.textContent;
-        if (val === 'C') adultPin = "";
-        else if (val === '⌫') adultPin = adultPin.slice(0, -1);
-        else if (adultPin.length < 6) adultPin += val;
-        
-        adultPinDisplay.textContent = "•".repeat(adultPin.length);
-
-        if (adultPin.length === 6) {
-            if (adultPin === "123321") showScreen(configScreen);
-            else {
-                showMsg(adultLockFeedback, "Wrong PIN! ❌", true);
-                adultPin = "";
-                setTimeout(() => { adultPinDisplay.textContent = ""; adultLockFeedback.textContent = ""; }, 1000);
-            }
-        }
-    });
-});
-
 // --- Reset Logic ---
 globalResetBtn.addEventListener('click', () => showScreen(resetConfirmScreen));
 confirmResetNo.addEventListener('click', () => showScreen(currentVisibleScreen));
@@ -281,20 +261,44 @@ function renderStats(stats) {
 }
 
 // --- Keypad Inputs ---
-function setupKeypad(btns, inputEl, max = 999) {
+function setupKeypad(btns, actionFn) {
     btns.forEach(btn => {
         btn.addEventListener('click', () => {
             const val = btn.textContent;
-            if (val === 'C') inputEl.value = '';
-            else if (val === '⌫') inputEl.value = inputEl.value.slice(0, -1);
-            else if (inputEl.value.length < (inputEl.maxLength || max)) inputEl.value += val;
+            actionFn(val);
         });
     });
 }
 
-setupKeypad(keypadBtns, answerInput);
-setupKeypad(passKeypadBtns, passcodeInput, 4);
-setupKeypad(adultKeypadBtns, { value: "" }); // PIN handled in custom listener
+setupKeypad(keypadBtns, (val) => {
+    if (isTransitioning) return;
+    if (val === 'C') answerInput.value = '';
+    else if (val === '⌫') answerInput.value = answerInput.value.slice(0, -1);
+    else if (answerInput.value.length < 3) answerInput.value += val;
+});
+
+setupKeypad(passKeypadBtns, (val) => {
+    if (val === 'C') passcodeInput.value = '';
+    else if (val === '⌫') passcodeInput.value = passcodeInput.value.slice(0, -1);
+    else if (passcodeInput.value.length < 4) passcodeInput.value += val;
+});
+
+setupKeypad(adultKeypadBtns, (val) => {
+    if (val === 'C') adultPin = "";
+    else if (val === '⌫') adultPin = adultPin.slice(0, -1);
+    else if (adultPin.length < 6) adultPin += val;
+    
+    adultPinDisplay.textContent = "•".repeat(adultPin.length);
+
+    if (adultPin.length === 6) {
+        if (adultPin === "123321") showScreen(configScreen);
+        else {
+            showMsg(adultLockFeedback, "Wrong PIN! ❌", true);
+            adultPin = "";
+            setTimeout(() => { adultPinDisplay.textContent = ""; adultLockFeedback.textContent = ""; }, 1000);
+        }
+    }
+});
 
 submitBtn.addEventListener('click', checkAnswer);
 startBtn.addEventListener('click', startQuiz);
