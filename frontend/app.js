@@ -9,6 +9,7 @@ let isGuest = false;
 let authMode = null; 
 let sessionDetails = []; 
 let currentVisibleScreen = null;
+let adultPin = "";
 
 // DOM Elements
 const configScreen = document.getElementById('config-screen');
@@ -17,8 +18,10 @@ const resultsScreen = document.getElementById('results-screen');
 const authScreen = document.getElementById('auth-screen');
 const passcodeScreen = document.getElementById('passcode-screen');
 const resetConfirmScreen = document.getElementById('reset-confirm-screen');
+const adultLockScreen = document.getElementById('adult-lock-screen');
 
 const userDisplay = document.getElementById('user-display');
+const settingsIcon = document.getElementById('settings-icon');
 const globalResetBtn = document.getElementById('global-reset-btn');
 
 const tableBtns = document.querySelectorAll('.table-btn');
@@ -40,6 +43,7 @@ const resetBtn = document.getElementById('reset-btn');
 
 const keypadBtns = document.querySelectorAll('.key-btn');
 const passKeypadBtns = document.querySelectorAll('.pass-key-btn');
+const adultKeypadBtns = document.querySelectorAll('.adult-key-btn');
 
 const usernameInput = document.getElementById('username-input');
 const loginModeBtn = document.getElementById('login-mode-btn');
@@ -56,6 +60,10 @@ const authNameFeedbackEl = document.getElementById('auth-name-feedback');
 const confirmResetYes = document.getElementById('confirm-reset-yes');
 const confirmResetNo = document.getElementById('confirm-reset-no');
 
+const adultPinDisplay = document.getElementById('adult-pin-display');
+const adultLockFeedback = document.getElementById('adult-lock-feedback');
+const adultLockCancel = document.getElementById('adult-lock-cancel');
+
 const API_HEADERS = { 
     'Content-Type': 'application/json',
     'X-App-Source': 'TimestablesApp' 
@@ -63,13 +71,21 @@ const API_HEADERS = {
 
 // --- Screen Navigation ---
 function showScreen(screen) {
-    [configScreen, quizScreen, resultsScreen, authScreen, passcodeScreen, resetConfirmScreen].forEach(s => s.style.display = 'none');
-    screen.style.display = (screen === resetConfirmScreen) ? 'flex' : 'block';
-    if (screen !== resetConfirmScreen) currentVisibleScreen = screen;
+    [configScreen, quizScreen, resultsScreen, authScreen, passcodeScreen, resetConfirmScreen, adultLockScreen].forEach(s => s.style.display = 'none');
+    
+    if (screen === resetConfirmScreen || screen === adultLockScreen) {
+        screen.style.display = 'flex';
+    } else {
+        screen.style.display = 'block';
+        currentVisibleScreen = screen;
+    }
 
-    if (screen === authScreen || screen === passcodeScreen || screen === resetConfirmScreen) {
+    // Nav Icons visibility
+    if (screen === authScreen || screen === passcodeScreen || screen === resetConfirmScreen || screen === adultLockScreen) {
+        settingsIcon.style.display = 'none';
         globalResetBtn.style.display = 'none';
     } else {
+        settingsIcon.style.display = 'flex';
         globalResetBtn.style.display = 'flex';
     }
 }
@@ -109,31 +125,6 @@ function startAuth(mode) {
 
 backAuthBtn.addEventListener('click', () => showScreen(authScreen));
 
-// --- Reset Logic ---
-globalResetBtn.addEventListener('click', () => showScreen(resetConfirmScreen));
-confirmResetNo.addEventListener('click', () => showScreen(currentVisibleScreen));
-confirmResetYes.addEventListener('click', () => resetToStart());
-
-function resetToStart() {
-    loggedInUser = null;
-    isGuest = false;
-    selectedTables.clear();
-    tableBtns.forEach(b => b.classList.remove('selected'));
-    startBtn.disabled = true;
-    userDisplay.textContent = '';
-    usernameInput.value = '';
-    showScreen(authScreen);
-}
-
-passKeypadBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-        const val = btn.textContent;
-        if (val === 'C') passcodeInput.value = '';
-        else if (val === '⌫') passcodeInput.value = passcodeInput.value.slice(0, -1);
-        else if (passcodeInput.value.length < 4) passcodeInput.value += val;
-    });
-});
-
 async function submitAuth() {
     const name = usernameInput.value.trim();
     const passcode = passcodeInput.value;
@@ -158,7 +149,14 @@ async function submitAuth() {
             loggedInUser = data.user;
             isGuest = false;
             userDisplay.textContent = `Playing as: ${loggedInUser}`;
-            showScreen(configScreen);
+            
+            // Check for existing config
+            if (data.config && Object.keys(data.config).length > 0) {
+                applyConfig(data.config);
+                startQuiz();
+            } else {
+                showScreen(configScreen);
+            }
         } else {
             showAuthFeedback(data.message || response.statusText, "wrong");
         }
@@ -189,6 +187,88 @@ tableBtns.forEach(btn => {
     });
 });
 
+function applyConfig(config) {
+    selectedTables.clear();
+    tableBtns.forEach(btn => {
+        const val = btn.dataset.value;
+        if (config[val]) {
+            selectedTables.add(parseInt(val));
+            btn.classList.add('selected');
+        } else {
+            btn.classList.remove('selected');
+        }
+    });
+    startBtn.disabled = selectedTables.size === 0;
+}
+
+async function saveConfig() {
+    if (!loggedInUser || isGuest) return;
+    
+    const config = {};
+    for (let i = 2; i <= 12; i++) {
+        config[i] = selectedTables.has(i);
+    }
+
+    try {
+        await fetch('/api/UpdateConfig', {
+            method: 'POST',
+            headers: API_HEADERS,
+            body: JSON.stringify({ username: loggedInUser, config: config })
+        });
+    } catch (e) { console.error("Failed to save config", e); }
+}
+
+// --- Adult Lock Logic ---
+settingsIcon.addEventListener('click', () => {
+    adultPin = "";
+    adultPinDisplay.textContent = "";
+    adultLockFeedback.textContent = "";
+    showScreen(adultLockScreen);
+});
+
+adultLockCancel.addEventListener('click', () => showScreen(currentVisibleScreen));
+
+adultKeypadBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        const val = btn.textContent;
+        if (val === 'C') adultPin = "";
+        else if (val === '⌫') adultPin = adultPin.slice(0, -1);
+        else if (adultPin.length < 6) adultPin += val;
+        
+        adultPinDisplay.textContent = "•".repeat(adultPin.length);
+
+        if (adultPin.length === 6) {
+            if (adultPin === "123321") {
+                showScreen(configScreen);
+            } else {
+                adultLockFeedback.textContent = "Wrong PIN! ❌";
+                adultLockFeedback.className = "feedback-area wrong";
+                adultPin = "";
+                setTimeout(() => { 
+                    adultPinDisplay.textContent = ""; 
+                    adultLockFeedback.textContent = "";
+                }, 1000);
+            }
+        }
+    });
+});
+
+// --- Reset Logic ---
+globalResetBtn.addEventListener('click', () => showScreen(resetConfirmScreen));
+confirmResetNo.addEventListener('click', () => showScreen(currentVisibleScreen));
+confirmResetYes.addEventListener('click', () => resetToStart());
+
+function resetToStart() {
+    loggedInUser = null;
+    isGuest = false;
+    selectedTables.clear();
+    tableBtns.forEach(b => b.classList.remove('selected'));
+    startBtn.disabled = true;
+    userDisplay.textContent = '';
+    usernameInput.value = '';
+    showScreen(authScreen);
+}
+
 // --- Quiz Logic ---
 function createQuestionPool() {
     let pool = [];
@@ -201,6 +281,8 @@ function createQuestionPool() {
 }
 
 function startQuiz() {
+    if (selectedTables.size === 0) return;
+    saveConfig(); // Persist selection
     questionPool = createQuestionPool();
     currentQuestionIndex = 0;
     score = 0;
@@ -260,9 +342,7 @@ async function finishSession() {
             });
             const stats = await response.json();
             renderStats(stats);
-        } catch (e) {
-            console.error("Error saving stats:", e);
-        }
+        } catch (e) { console.error("Error saving stats:", e); }
     }
     showScreen(resultsScreen);
 }
@@ -298,6 +378,15 @@ keypadBtns.forEach(btn => {
         if (val === 'C') answerInput.value = '';
         else if (val === '⌫') answerInput.value = answerInput.value.slice(0, -1);
         else answerInput.value += val;
+    });
+});
+
+passKeypadBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        const val = btn.textContent;
+        if (val === 'C') passcodeInput.value = '';
+        else if (val === '⌫') passcodeInput.value = passcodeInput.value.slice(0, -1);
+        else if (passcodeInput.value.length < 4) passcodeInput.value += val;
     });
 });
 

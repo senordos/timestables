@@ -9,7 +9,13 @@
 <body>
     <div class="container">
         <div id="user-display" class="user-display"></div>
-        <div id="global-reset-btn" class="reset-icon" style="display:none;">🚪</div>
+        
+        <!-- Top Navigation Icons -->
+        <div class="top-nav">
+            <div id="settings-icon" class="nav-icon" style="display:none;">⚙️</div>
+            <div id="global-reset-btn" class="nav-icon reset-icon" style="display:none;">🚪</div>
+        </div>
+
         <h1>Maths Fun! 🧮</h1>
 
         <!-- Authentication Screen (Default) -->
@@ -142,6 +148,39 @@
                 <p>Your progress will be lost.</p>
                 <button id="confirm-reset-yes" class="main-btn">Yes, Reset</button>
                 <button id="confirm-reset-no" class="secondary-btn">No, Cancel</button>
+            </div>
+        </div>
+
+        <!-- Adult Settings Lock Overlay -->
+        <div id="adult-lock-screen" style="display:none;">
+            <div class="warning-box">
+                <h2>Adult Access 🔒</h2>
+                <p>Enter the 6-digit PIN to change settings:</p>
+                <div id="adult-pin-display" class="pin-display"></div>
+                <div class="keypad">
+                    <div class="keypad-row">
+                        <button class="adult-key-btn">1</button>
+                        <button class="adult-key-btn">2</button>
+                        <button class="adult-key-btn">3</button>
+                    </div>
+                    <div class="keypad-row">
+                        <button class="adult-key-btn">4</button>
+                        <button class="adult-key-btn">5</button>
+                        <button class="adult-key-btn">6</button>
+                    </div>
+                    <div class="keypad-row">
+                        <button class="adult-key-btn">7</button>
+                        <button class="adult-key-btn">8</button>
+                        <button class="adult-key-btn">9</button>
+                    </div>
+                    <div class="keypad-row">
+                        <button class="adult-key-btn" id="clear-adult-btn">C</button>
+                        <button class="adult-key-btn">0</button>
+                        <button class="adult-key-btn" id="del-adult-btn">⌫</button>
+                    </div>
+                </div>
+                <div id="adult-lock-feedback" class="feedback-area"></div>
+                <button id="adult-lock-cancel" class="secondary-btn">Cancel</button>
             </div>
         </div>
     </div>
