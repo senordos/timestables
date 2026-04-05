@@ -426,8 +426,10 @@ function renderStats(stats) {
 
 // --- Keypad Inputs ---
 function setupKeypad(btns, actionFn) {
+    console.log(`Setting up keypad for ${btns.length} buttons`);
     btns.forEach(btn => {
         btn.addEventListener('click', () => {
+            console.log(`Button clicked: ${btn.textContent}`);
             if (isTransitioning && btns === keypadBtns) return;
             actionFn(btn.textContent);
         });
