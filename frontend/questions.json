@@ -1,6 +1,6 @@
 [
     { 
-        "text": "Captain Barnaby has {0} coins. He gives {1} to Polly. Then he finds {2} more on the beach. How many coins now?", 
+        "text": "Captain Barnaby has {0} coins. He gives {1} to Polly. Then he finds {2} more on the beach. How many coins does he have?", 
         "sets": [{"v":[12,5,3], "a":10}, {"v":[15,6,4], "a":13}, {"v":[10,4,5], "a":11}], "difficulty": "easy" 
     },
     { 
@@ -16,11 +16,11 @@
         "sets": [{"v":[9,4,2], "a":7}, {"v":[12,5,3], "a":10}, {"v":[15,7,4], "a":12}], "difficulty": "easy" 
     },
     { 
-        "text": "There are {0} toys. You take out {1}. You put {2} back because they are sleepy. How many toys are still out?", 
+        "text": "There are {0} toys. You take out {1}. You put {2} back. How many toys are still out?", 
         "sets": [{"v":[20,10,3], "a":13}, {"v":[15,8,4], "a":11}, {"v":[25,15,5], "a":15}], "difficulty": "easy" 
     },
     { 
-        "text": "{0} T-Rexes are dancing. {1} go home. Then {2} Triceratops arrive. How many dinosaurs now?", 
+        "text": "{0} T-Rexes are dancing. {1} go home. Then {2} Triceratops arrive. How many dinosaurs are there now?", 
         "sets": [{"v":[8,3,6], "a":11}, {"v":[10,4,5], "a":11}, {"v":[6,2,8], "a":12}], "difficulty": "easy" 
     },
     { 
@@ -28,11 +28,11 @@
         "sets": [{"v":[12,5,3], "a":10}, {"v":[10,4,6], "a":12}, {"v":[15,8,4], "a":11}], "difficulty": "easy" 
     },
     { 
-        "text": "{0} people are on a bus. {1} get off. At the next stop, {2} get on. How many people now?", 
-        "sets": [{"v":[10,4,7], "a":13}, {"v":[15,6,8], "a":17}, {"v:[12,5,5], "a":12}], "difficulty": "easy" 
+        "text": "{0} people are on a bus. {1} get off. At the next stop, {2} get on. How many people on the bus now?", 
+        "sets": [{"v":[10,4,7], "a":13}, {"v":[15,6,8], "a":17}, {"v":[12,5,5], "a":12}], "difficulty": "easy" 
     },
     { 
-        "text": "A basket has {0} apples and {1} oranges. You eat {2} apples. Then you add {3} more oranges. How many fruit total?", 
+        "text": "A basket has {0} apples and {1} oranges. You eat {2} apples. Then you add {3} more oranges. How many fruit in the basket?", 
         "sets": [{"v":[7,7,4,2], "a":12}, {"v":[6,8,3,4], "a":15}, {"v":[5,10,2,5], "a":18}], "difficulty": "medium" 
     },
     { 
@@ -44,15 +44,15 @@
         "sets": [{"v":[15,5,4,6], "a":12}, {"v":[20,8,6,10], "a":16}, {"v":[25,10,10,5], "a":10}], "difficulty": "medium" 
     },
     { 
-        "text": "A tree has {0} birds. {1} fly away. {2} more land. Then {3} more fly away. How many birds now?", 
+        "text": "A tree has {0} birds. {1} fly away. {2} more land. Then {3} more fly away. How many birds remain?", 
         "sets": [{"v":[8,3,5,2], "a":8}, {"v":[10,4,6,3], "a":9}, {"v":[12,5,8,4], "a":11}], "difficulty": "medium" 
     },
     { 
-        "text": "A pirate finds {0} gems. He loses {1} in the sand. He finds {2} more. Then he gives {3} to a monkey. How many now?", 
+        "text": "A pirate finds {0} gems. He loses {1} in the sand. He finds {2} more. Then he gives {3} to a monkey. How many does he have?", 
         "sets": [{"v":[15,6,4,2], "a":11}, {"v":[20,8,5,4], "a":13}, {"v":[12,5,6,3], "a":10}], "difficulty": "medium" 
     },
     { 
-        "text": "You have {0} markers. {1} dry up. You buy a pack of {2}. Then you give {3} to a friend. How many markers now?", 
+        "text": "You have {0} markers. {1} dry up. You buy a pack of {2}. Then you give {3} to a friend. How many markers do you have?", 
         "sets": [{"v":[12,4,8,3], "a":13}, {"v":[10,3,6,2], "a":11}, {"v":[15,5,10,5], "a":15}], "difficulty": "medium" 
     },
     { 
@@ -60,11 +60,11 @@
         "sets": [{"v":[9,3,6,4], "a":8}, {"v":[12,4,5,3], "a":10}, {"v":[10,2,4,5], "a":7}], "difficulty": "medium" 
     },
     { 
-        "text": "You have {0} sweets. You give {1} to your sister and {2} to your brother. Your mum gives you {3} more. Then you eat {4}. How many left?", 
+        "text": "You have {0} sweets. You give {1} to your sister and {2} to your brother. Your mum gives you {3} more. Then you eat {4}. How many do you have?", 
         "sets": [{"v":[20,5,5,8,3], "a":15}, {"v":[25,6,6,10,5], "a":18}, {"v":[15,3,3,6,4], "a":11}], "difficulty": "hard" 
     },
     { 
-        "text": "A shelf has {0} books. You take {1} out. Your friend puts {2} back. A teacher takes {3} books. Then you find {4} more. How many now?", 
+        "text": "A shelf has {0} books. You take {1} out. Your friend puts {2} back. A teacher takes {3} books. Then you find {4} more. How many books on the shelf?", 
         "sets": [{"v":[12,4,6,2,1], "a":13}, {"v":[15,5,8,3,2], "a":17}, {"v":[10,3,5,2,4], "a":14}], "difficulty": "hard" 
     },
     { 
@@ -72,23 +72,23 @@
         "sets": [{"v":[7,7,3,5,2], "a":14}, {"v":[10,10,4,6,3], "a":19}, {"v":[6,6,2,8,2], "a":16}], "difficulty": "hard" 
     },
     { 
-        "text": "15 balloons are at a party. {1} balloons pop! You blow up {2} more. {3} balloons fly out. A friend brings {4} more. How many now?", 
+        "text": "15 balloons are at a party. {1} balloons pop! You blow up {2} more. {3} balloons fly out. A friend brings {4} more. How many balloons?", 
         "sets": [{"v":[15,4,6,2,3], "a":18}, {"v":[20,5,8,4,2], "a":21}, {"v":[12,3,5,1,4], "a":17}], "difficulty": "hard" 
     },
     { 
-        "text": "A farm has {0} animals. {1} cows go to the barn. {2} pigs go to the field. {3} sheep arrive. {4} cow comes back. How many now?", 
+        "text": "A farm has {0} animals. {1} cows go to the barn. {2} pigs go to the field. {3} sheep arrive. {4} cow comes back. How many animals are there now?", 
         "sets": [{"v":[10,3,2,5,1], "a":11}, {"v":[15,4,3,8,2], "a":18}, {"v":[12,5,4,6,3], "a":12}], "difficulty": "hard" 
     },
     { 
-        "text": "There are {0} kids at a park. {1} go home. {2} more arrive. {3} go to the slides. Then {4} leave. How many kids left?", 
+        "text": "There are {0} kids at a park. {1} go home. {2} more arrive. {3} go to the slides. Then {4} leave. How many kids in the park?", 
         "sets": [{"v":[20,6,4,3,2], "a":13}, {"v":[15,4,5,2,3], "a":11}, {"v":[25,10,8,5,4], "a":14}], "difficulty": "hard" 
     },
     { 
-        "text": "A shop has {0} robot toys. It sells {1}. It gets {2} more in a box. {3} are broken and taken away. Then {4} more are sold. How many now?", 
+        "text": "A shop has {0} robot toys. It sells {1}. It gets {2} more in a box. {3} are broken and taken away. Then {4} more are sold. How many robots are there now?", 
         "sets": [{"v":[20,8,10,5,2], "a":15}, {"v":[15,5,12,4,3], "a":15}, {"v":[25,10,15,6,4], "a":20}], "difficulty": "hard" 
     },
     { 
-        "text": "A castle has {0} knights. {1} go on a quest. {2} new knights arrive. {3} go to sleep. Then {4} come back from the quest. How many ready?", 
+        "text": "A castle has {0} knights. {1} go on a quest. {2} new knights arrive. {3} go to sleep. Then {4} come back from the quest. How many knights are ready?", 
         "sets": [{"v":[12,4,6,3,2], "a":13}, {"v":[15,5,8,4,3], "a":17}, {"v":[10,3,5,2,1], "a":11}], "difficulty": "hard" 
     }
 ]
