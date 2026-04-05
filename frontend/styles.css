@@ -4,33 +4,49 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh;
     margin: 0;
+    padding: 10px;
+    box-sizing: border-box;
     touch-action: manipulation;
 }
 
 .container {
     background-color: #ffffff;
-    padding: 30px;
+    padding: clamp(15px, 5vw, 30px);
     border-radius: 20px;
     box-shadow: 0 10px 25px rgba(0,0,0,0.1);
     text-align: center;
-    width: 350px;
-    min-height: 500px;
+    width: 100%;
+    max-width: 450px;
+    max-height: 95vh;
+    min-height: 300px;
     border: 5px solid #ffeb3b;
     position: relative;
-    overflow: hidden;
+    overflow-y: auto;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
+    box-sizing: border-box;
+}
+
+/* Scrollbar styling for a cleaner look */
+.container::-webkit-scrollbar {
+    width: 6px;
+}
+.container::-webkit-scrollbar-thumb {
+    background: #ffeb3b;
+    border-radius: 10px;
 }
 
 .user-display {
-    position: absolute;
-    top: 10px;
-    left: 15px;
+    position: relative;
+    top: 0;
+    left: 0;
     font-size: 0.8em;
     color: #888;
+    margin-bottom: 10px;
+    text-align: left;
 }
 
 /* Top Navigation */
@@ -44,11 +60,11 @@ body {
 }
 
 .nav-icon {
-    font-size: 1.5em;
+    font-size: clamp(1em, 4vw, 1.5em);
     cursor: pointer;
     background: #f5f5f5;
-    width: 40px;
-    height: 40px;
+    width: clamp(30px, 8vw, 40px);
+    height: clamp(30px, 8vw, 40px);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -64,17 +80,18 @@ body {
 
 h1 {
     color: #ff5722;
-    font-size: 2.2em;
-    margin: 15px 0 20px 0;
+    font-size: clamp(1.5em, 6vw, 2.2em);
+    margin: 10px 0 15px 0;
 }
 
 h2 {
     color: #2196f3;
     margin-top: 0;
+    font-size: clamp(1.2em, 5vw, 1.8em);
 }
 
 p {
-    font-size: 1.2em;
+    font-size: clamp(1em, 4vw, 1.2em);
     color: #555;
     margin-bottom: 15px;
 }
