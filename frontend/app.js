@@ -63,6 +63,10 @@ document.addEventListener('DOMContentLoaded', () => {
             screen.style.display = 'block';
             state.currentVisibleScreen = screen;
         }
+
+        const isLogin = [screens.auth, screens.passcode, screens.resetConfirm, screens.adultLock].includes(screen);
+        if (settingsIcon) settingsIcon.style.display = isLogin ? 'none' : 'flex';
+        if (globalResetBtn) globalResetBtn.style.display = isLogin ? 'none' : 'flex';
     };
 
     const showMsg = (el, text, isError = false) => {
