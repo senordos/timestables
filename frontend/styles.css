@@ -284,7 +284,7 @@ p {
 #del-btn, #del-pass-btn, #del-adult-btn { background-color: #fff3e0; border-color: #ff9800; color: #ff9800; }
 
 .feedback-area {
-    height: 35px;
+    min-height: 35px;
     font-size: 1.2em;
     font-weight: bold;
     margin-top: 10px;

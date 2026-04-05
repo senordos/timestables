@@ -27,8 +27,6 @@ const resetConfirmScreen = document.getElementById('reset-confirm-screen');
 const adultLockScreen = document.getElementById('adult-lock-screen');
 
 const userDisplay = document.getElementById('user-display');
-const settingsIcon = document.getElementById('settings-icon');
-const globalResetBtn = document.getElementById('global-reset-btn');
 
 const tableBtns = document.querySelectorAll('.table-btn');
 const difficultyBtns = document.querySelectorAll('.difficulty-btn');
@@ -42,6 +40,7 @@ const scoreEl = document.getElementById('score');
 const answerInput = document.getElementById('answer');
 const submitBtn = document.getElementById('submit-btn');
 const feedbackEl = document.getElementById('feedback');
+const quizKeypad = document.getElementById('quiz-keypad');
 
 const finalScoreEl = document.getElementById('final-score');
 const resultTotalEl = document.getElementById('result-total');
@@ -203,10 +202,6 @@ function showScreen(screen) {
         screen.style.display = 'block';
         currentVisibleScreen = screen;
     }
-
-    const isLogin = [authScreen, passcodeScreen, resetConfirmScreen, adultLockScreen].includes(screen);
-    settingsIcon.style.display = isLogin ? 'none' : 'flex';
-    globalResetBtn.style.display = isLogin ? 'none' : 'flex';
 }
 
 showScreen(authScreen);
@@ -366,7 +361,10 @@ function showQuestion() {
     currentQuestion = questionPool[currentQuestionIndex];
     questionEl.textContent = currentGame === 'times_tables' ? `${currentQuestion.a} x ${currentQuestion.b} = ?` : currentQuestion.text;
     questionNumEl.textContent = currentQuestionIndex + 1;
-    answerInput.value = ''; feedbackEl.textContent = '';
+    answerInput.value = ''; 
+    feedbackEl.textContent = '';
+    feedbackEl.style.display = 'none';
+    quizKeypad.style.display = 'block';
 }
 
 function checkAnswer() {
@@ -383,6 +381,14 @@ function checkAnswer() {
         score++; scoreEl.textContent = score;
         showMsg(feedbackEl, 'Correct! 🌟');
     } else showMsg(feedbackEl, `Oops! It was ${currentQuestion.answer} 🔄`, true);
+
+    quizKeypad.style.display = 'none';
+    feedbackEl.style.display = 'block';
+    feedbackEl.style.height = '180px'; // Approx height of keypad
+    feedbackEl.style.display = 'flex';
+    feedbackEl.style.alignItems = 'center';
+    feedbackEl.style.justifyContent = 'center';
+    feedbackEl.style.fontSize = '2em';
 
     setTimeout(() => {
         isTransitioning = false;
