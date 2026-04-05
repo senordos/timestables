@@ -1,4 +1,7 @@
 // State Management
+window.onerror = function(msg, url, line) {
+    alert("Error: " + msg + "\nurl: " + url + "\nline: " + line);
+};
 let selectedTables = new Set();
 let questionPool = [];
 let currentQuestionIndex = 0;
