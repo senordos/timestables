@@ -11,9 +11,9 @@ let sessionDetails = [];
 let currentVisibleScreen = null;
 let adultPin = "";
 let isTransitioning = false;
-let currentGame = null; // 'times_tables' or 'story_maths'
+let currentGame = null; 
 let storyDifficulty = 'easy';
-let userGames = {}; // Stores all game configs from API
+let userGames = {}; 
 
 // DOM Elements
 const configScreen = document.getElementById('config-screen');
@@ -76,16 +76,103 @@ const adultLockCancel = document.getElementById('adult-lock-cancel');
 
 // --- Story Questions ---
 const STORY_POOL = [
-    { text: "Nutty the Squirrel has 10 nuts. He hides 4 in a tree and 3 in a hole. A bird gives him 2 more. How many nuts now?", answer: 5, difficulty: 'hard' },
-    { text: "Captain Barnaby has 12 coins. He gives 5 to Polly. Then he finds 3 more on the beach. How many coins now?", answer: 10, difficulty: 'easy' },
-    { text: "There are 6 astronauts. 2 float out. Then 4 aliens hop inside. How many friends inside now?", answer: 8, difficulty: 'easy' },
-    { text: "A baker makes 15 cupcakes. A hungry giant eats 8. The baker bakes 5 more. How many ready to sell?", answer: 12, difficulty: 'easy' },
-    { text: "9 bees are sleeping. 4 fly out. Later, 2 fly back. How many bees in the hive now?", answer: 7, difficulty: 'easy' },
-    { text: "There are 20 toys. You take out 10. You put 3 back because they are sleepy. How many toys are still out?", answer: 7, difficulty: 'easy' },
-    { text: "8 T-Rexes are dancing. 3 go home. Then 6 Triceratops arrive. How many dinosaurs now?", answer: 11, difficulty: 'easy' },
-    { text: "A basket has 7 apples and 7 oranges. You eat 4 apples. Then you add 2 more oranges. How many fruit total?", answer: 12, difficulty: 'easy' },
-    { text: "12 fish are swimming. 5 hide. Then 3 more swim out. How many fish can you see swimming now?", answer: 10, difficulty: 'easy' },
-    { text: "10 people are on a bus. 4 get off. At the next stop, 7 get on. How many people now?", answer: 13, difficulty: 'easy' }
+    // EASY (2 Steps)
+    { 
+        text: "Captain Barnaby has {0} coins. He gives {1} to Polly. Then he finds {2} more on the beach. How many coins now?", 
+        sets: [{v:[12,5,3], a:10}, {v:[15,6,4], a:13}, {v:[10,4,5], a:11}], difficulty: 'easy' 
+    },
+    { 
+        text: "There are {0} astronauts. {1} float out. Then {2} aliens hop inside. How many friends inside now?", 
+        sets: [{v:[6,2,4], a:8}, {v:[8,3,5], a:10}, {v:[5,1,6], a:10}], difficulty: 'easy' 
+    },
+    { 
+        text: "A baker makes {0} cupcakes. A hungry giant eats {1}. The baker bakes {2} more. How many ready to sell?", 
+        sets: [{v:[15,8,5], a:12}, {v:[20,12,6], a:14}, {v:[12,5,4], a:11}], difficulty: 'easy' 
+    },
+    { 
+        text: "{0} bees are sleeping. {1} fly out. Later, {2} fly back. How many bees in the hive now?", 
+        sets: [{v:[9,4,2], a:7}, {v:[12,5,3], a:10}, {v:[15,7,4], a:12}], difficulty: 'easy' 
+    },
+    { 
+        text: "There are {0} toys. You take out {1}. You put {2} back because they are sleepy. How many toys are still out?", 
+        sets: [{v:[20,10,3], a:13}, {v:[15,8,4], a:11}, {v:[25,15,5], a:15}], difficulty: 'easy' 
+    },
+    { 
+        text: "{0} T-Rexes are dancing. {1} go home. Then {2} Triceratops arrive. How many dinosaurs now?", 
+        sets: [{v:[8,3,6], a:11}, {v:[10,4,5], a:11}, {v:[6,2,8], a:12}], difficulty: 'easy' 
+    },
+    { 
+        text: "{0} fish are swimming. {1} hide. Then {2} more swim out. How many fish can you see swimming now?", 
+        sets: [{v:[12,5,3], a:10}, {v:[10,4,6], a:12}, {v:[15,8,4], a:11}], difficulty: 'easy' 
+    },
+    { 
+        text: "{0} people are on a bus. {1} get off. At the next stop, {2} get on. How many people now?", 
+        sets: [{v:[10,4,7], a:13}, {v:[15,6,8], a:17}, {v:[12,5,5], a:12}], difficulty: 'easy' 
+    },
+    
+    // MEDIUM (3 Steps)
+    { 
+        text: "A basket has {0} apples and {1} oranges. You eat {2} apples. Then you add {3} more oranges. How many fruit total?", 
+        sets: [{v:[7,7,4,2], a:12}, {v:[6,8,3,4], a:15}, {v:[5,10,2,5], a:18}], difficulty: 'medium' 
+    },
+    { 
+        text: "Nutty the Squirrel has {0} nuts. He hides {1} in a tree and {2} in a hole. A bird gives him {3} more. How many nuts now?", 
+        sets: [{v:[10,4,3,2], a:5}, {v:[15,5,5,4], a:9}, {v:[12,4,4,3], a:7}], difficulty: 'medium' 
+    },
+    { 
+        text: "You have {0} lego bricks. You use {1} for a car and {2} for a plane. Then you find {3} more. How many bricks now?", 
+        sets: [{v:[15,5,4,6], a:12}, {v:[20,8,6,10], a:16}, {v:[25,10,10,5], a:10}], difficulty: 'medium' 
+    },
+    { 
+        text: "A tree has {0} birds. {1} fly away. {2} more land. Then {3} more fly away. How many birds now?", 
+        sets: [{v:[8,3,5,2], a:8}, {v:[10,4,6,3], a:9}, {v:[12,5,8,4], a:11}], difficulty: 'medium' 
+    },
+    { 
+        text: "A pirate finds {0} gems. He loses {1} in the sand. He finds {2} more. Then he gives {3} to a monkey. How many now?", 
+        sets: [{v:[15,6,4,2], a:11}, {v:[20,8,5,4], a:13}, {v:[12,5,6,3], a:10}], difficulty: 'medium' 
+    },
+    { 
+        text: "You have {0} markers. {1} dry up. You buy a pack of {2}. Then you give {3} to a friend. How many markers now?", 
+        sets: [{v:[12,4,8,3], a:13}, {v:[10,3,6,2], a:11}, {v:[15,5,10,5], a:15}], difficulty: 'medium' 
+    },
+    { 
+        text: "There are {0} frogs on a log. {1} jump off. {2} more jump on. Then {3} more jump off. How many frogs on the log?", 
+        sets: [{v:[9,3,6,4], a:8}, {v:[12,4,5,3], a:10}, {v:[10,2,4,5], a:7}], difficulty: 'medium' 
+    },
+    
+    // HARD (4 Steps)
+    { 
+        text: "You have {0} sweets. You give {1} to your sister and {2} to your brother. Your mum gives you {3} more. Then you eat {4}. How many left?", 
+        sets: [{v:[20,5,5,8,3], a:15}, {v:[25,6,6,10,5], a:18}, {v:[15,3,3,6,4], a:11}], difficulty: 'hard' 
+    },
+    { 
+        text: "A shelf has {0} books. You take {1} out. Your friend puts {2} back. A teacher takes {3} books. Then you find {4} more. How many now?", 
+        sets: [{v:[12,4,6,2,1], a:13}, {v:[15,5,8,3,2], a:17}, {v:[10,3,5,2,4], a:14}], difficulty: 'hard' 
+    },
+    { 
+        text: "There are {0} red flowers and {1} blue flowers. Wind blows away {2} red. You plant {3} yellow. Then {4} blue wilt. How many now?", 
+        sets: [{v:[7,7,3,5,2], a:14}, {v:[10,10,4,6,3], a:19}, {v:[6,6,2,8,2], a:16}], difficulty: 'hard' 
+    },
+    { 
+        text: "15 balloons are at a party. {1} balloons pop! You blow up {2} more. {3} balloons fly out. A friend brings {4} more. How many now?", 
+        sets: [{v:[15,4,6,2,3], a:18}, {v:[20,5,8,4,2], a:21}, {v:[12,3,5,1,4], a:17}], difficulty: 'hard' 
+    },
+    { 
+        text: "A farm has {0} animals. {1} cows go to the barn. {2} pigs go to the field. {3} sheep arrive. {4} cow comes back. How many now?", 
+        sets: [{v:[10,3,2,5,1], a:11}, {v:[15,4,3,8,2], a:18}, {v:[12,5,4,6,3], a:12}], difficulty: 'hard' 
+    },
+    { 
+        text: "There are {0} kids at a park. {1} go home. {2} more arrive. {3} go to the slides. Then {4} leave. How many kids left?", 
+        sets: [{v:[20,6,4,3,2], a:13}, {v:[15,4,5,2,3], a:11}, {v:[25,10,8,5,4], a:14}], difficulty: 'hard' 
+    },
+    { 
+        text: "A shop has {0} robot toys. It sells {1}. It gets {2} more in a box. {3} are broken and taken away. Then {4} more are sold. How many now?", 
+        sets: [{v:[20,8,10,5,2], a:15}, {v:[15,5,12,4,3], a:15}, {v:[25,10,15,6,4], a:20}], difficulty: 'hard' 
+    },
+    { 
+        text: "A castle has {0} knights. {1} go on a quest. {2} new knights arrive. {3} go to sleep. Then {4} come back from the quest. How many ready?", 
+        sets: [{v:[12,4,6,3,2], a:13}, {v:[15,5,8,4,3], a:17}, {v:[10,3,5,2,1], a:11}], difficulty: 'hard' 
+    }
 ];
 
 // --- API Helper ---
@@ -253,8 +340,21 @@ function startQuiz() {
         ).sort(() => Math.random() - 0.5);
         questionTotalEl.textContent = "10";
     } else {
-        questionPool = STORY_POOL.filter(q => q.difficulty === 'easy' || storyDifficulty === 'hard')
-            .sort(() => Math.random() - 0.5).slice(0, 5);
+        // Filter and BAKE story questions
+        const filtered = STORY_POOL.filter(q => {
+            if (storyDifficulty === 'easy') return q.difficulty === 'easy';
+            if (storyDifficulty === 'medium') return q.difficulty === 'easy' || q.difficulty === 'medium';
+            return true;
+        }).sort(() => Math.random() - 0.5).slice(0, 5);
+
+        questionPool = filtered.map(q => {
+            const set = q.sets[Math.floor(Math.random() * q.sets.length)];
+            let text = q.text;
+            set.v.forEach((val, i) => {
+                text = text.replace(`{${i}}`, val);
+            });
+            return { text, answer: set.a, difficulty: q.difficulty };
+        });
         questionTotalEl.textContent = "5";
     }
 
