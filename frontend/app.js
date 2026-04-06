@@ -40,6 +40,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const ui = {
         userDisplay: $('user-display'),
+        settingsIcon: $('settings-icon'),
+        globalResetBtn: $('global-reset-btn'),
         question: $('question'),
         questionNum: $('question-num'),
         questionTotal: $('question-total'),
@@ -65,8 +67,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const isLogin = [screens.auth, screens.passcode, screens.resetConfirm, screens.adultLock].includes(screen);
-        if (settingsIcon) settingsIcon.style.display = isLogin ? 'none' : 'flex';
-        if (globalResetBtn) globalResetBtn.style.display = isLogin ? 'none' : 'flex';
+        if (ui.settingsIcon) ui.settingsIcon.style.display = isLogin ? 'none' : 'flex';
+        if (ui.globalResetBtn) ui.globalResetBtn.style.display = isLogin ? 'none' : 'flex';
     };
 
     const showMsg = (el, text, isError = false) => {
